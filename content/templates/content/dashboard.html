@@ -1,0 +1,52 @@
+{% extends "content/base.html" %}
+
+{% block title %}Панель публикатора{% endblock %}
+
+{% block content %}
+<h1>Панель публикатора</h1>
+
+<p>
+  <a href="{% url 'create_post' %}">➕ Создать статью</a>
+</p>
+
+<table class="dashboard-table">
+  <thead>
+    <tr>
+      <th>Заголовок</th>
+      <th>Раздел</th>
+      <th>Статус</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  {% for post in posts %}
+    <tr>
+      <td>{{ post.title }}</td>
+      <td>{{ post.section.title }}</td>
+      <td>{{ post.get_status_display }}</td>
+      <td class="actions">
+
+        <a href="{% url 'post_detail' post.slug %}">просмотр</a>
+        <a href="{% url 'create_revision' post.slug %}">редактировать</a>
+
+        {% if post.status != post.Status.PUBLISHED %}
+          <form action="{% url 'publish_post' post.slug %}" method="post">
+            {% csrf_token %}
+            <button type="submit">опубликовать</button>
+          </form>
+        {% endif %}
+
+        {% if post.status != post.Status.ARCHIVED %}
+          <form action="{% url 'archive_post' post.slug %}" method="post">
+            {% csrf_token %}
+            <button type="submit">в архив</button>
+          </form>
+        {% endif %}
+
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

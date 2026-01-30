@@ -1,0 +1,35 @@
+{% block content %}
+<h1>{{ section.title }}</h1>
+
+{% if section.description %}
+  <p>{{ section.description }}</p>
+{% endif %}
+
+<div class="post-grid">
+  {% for post in posts %}
+    <article class="post-card">
+      <a href="{% url 'post_detail' post.slug %}" class="post-card-link">
+
+        {% if post.cover_image %}
+          <div class="post-card-image">
+            <img src="{{ post.cover_image.url }}" alt="{{ post.title }}">
+          </div>
+        {% endif %}
+
+        <div class="post-card-body">
+          <h3>{{ post.title }}</h3>
+
+          {% if post.summary %}
+            <p class="post-card-summary">
+              {{ post.summary }}
+            </p>
+          {% endif %}
+        </div>
+
+      </a>
+    </article>
+  {% empty %}
+    <p>В этом разделе пока нет статей.</p>
+  {% endfor %}
+</div>
+{% endblock %}

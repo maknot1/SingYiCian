@@ -1,0 +1,23 @@
+{% extends "content/base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<article class="article-content">
+
+  <h1>{{ post.title }}</h1>
+
+  {% if revision %}
+    {{ revision.content|safe }}
+  {% else %}
+    <p>Контент пока не опубликован.</p>
+  {% endif %}
+
+  {% if user.is_authenticated and user.is_staff %}
+    <hr>
+    <a href="{% url 'create_revision' post.slug %}">✏️ Редактировать</a>
+  {% endif %}
+
+</article>
+{% endblock %}
+
