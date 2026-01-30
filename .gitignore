@@ -19,12 +19,6 @@ db.sqlite3
 db.sqlite3-journal
 media/
 
-# Django migrations (иногда спорно, но чаще НЕ игнорят)
-# your_app/migrations/
-
-# Static files
-staticfiles/
-static/
 
 # Environment variables
 .env

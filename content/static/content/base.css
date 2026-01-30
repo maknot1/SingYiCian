@@ -1,0 +1,373 @@
+/* =========================================================
+   ШРИФТ
+========================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+/* =========================================================
+   RESET / БАЗА
+========================================================= */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #222;
+    background: #fafafa;
+}
+
+/* =========================================================
+   HEADER (шапка сайта)
+========================================================= */
+.site-header {
+    background: #6b0f0f;
+    color: #f5d7a1;
+}
+
+/* ===== Бренд / логотип ===== */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    text-decoration: none;
+    color: #f5d7a1;
+
+    max-width: 100%;
+}
+
+.logo {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.brand-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.brand-subtitle {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+
+/* ---------- Верхняя сервисная полоса ---------- */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 12px 24px;
+    background: linear-gradient(90deg, #5a0c0c, #7a1212);
+}
+
+
+/* Левая часть */
+.top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    width: 42px;
+    height: 42px;
+    display: block;
+}
+
+.site-title {
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 1.2;
+}
+
+.site-title small {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.85;
+}
+
+/* Правая часть */
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.contact-link {
+    color: #f5d7a1;
+    text-decoration: none;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.contact-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+
+.top-bar a {
+    color: #f5d7a1;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.top-bar a:hover {
+    text-decoration: underline;
+}
+
+/* Кнопка входа / выхода */
+.cta-button {
+    padding: 8px 14px;
+    border: 1px solid #f5d7a1;
+    border-radius: 6px;
+
+    background: transparent;
+    color: #f5d7a1;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cta-button:hover {
+    background: #f5d7a1;
+    color: #5a0c0c;
+}
+
+
+/* ---------- Основная навигация ---------- */
+.main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-menu a {
+    color: #f5d7a1;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 14px 18px;
+    display: inline-block;
+}
+
+.nav-menu a:hover {
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+}
+
+
+
+.nav-menu a.active {
+    background: rgba(255,255,255,0.15);
+}
+
+.nav-admin {
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* Кнопка меню */
+.nav-toggle {
+    display: none;
+    font-size: 22px;
+    background: none;
+    border: none;
+    color: #f5d7a1;
+    cursor: pointer;
+}
+
+/* =========================================================
+   ОСНОВНАЯ СЕТКА
+========================================================= */
+.page {
+    display: flex;
+    gap: 40px;
+    padding: 30px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+.sidebar {
+    background: #fff;
+    border-right: 1px solid #eee;
+    padding: 20px;
+    width: 260px;
+    flex-shrink: 0;
+    font-size: 15px;
+}
+
+.sidebar-title {
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #666;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    margin-bottom: 8px;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: #222;
+}
+
+.sidebar a:hover {
+    text-decoration: underline;
+}
+
+.sidebar-posts li.active > a {
+    font-weight: 600;
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+.content {
+    background: #fff;
+    padding: 30px;
+    max-width: 760px;
+    flex: 1;
+}
+
+.content h1 {
+    margin-top: 0;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.content h2 {
+    margin-top: 32px;
+    font-size: 22px;
+}
+
+.content h3 {
+    margin-top: 28px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.content p {
+    margin: 18px 0;
+}
+
+/* =========================================================
+   TOC
+========================================================= */
+.toc {
+    margin-top: 24px;
+    font-size: 14px;
+}
+
+.toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-list li {
+    margin-bottom: 6px;
+}
+
+.toc-h3 {
+    padding-left: 12px;
+    font-size: 13px;
+}
+
+.toc a {
+    text-decoration: none;
+    color: #333;
+}
+
+.toc a.active {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+footer {
+    border-top: 1px solid #e5e5e5;
+    padding: 15px 20px;
+    font-size: 14px;
+    color: #666;
+    margin-top: 40px;
+    background: #fff;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+@media (max-width: 900px) {
+
+    .nav-menu {
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .nav-menu.open {
+        display: flex;
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .page {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        display: none;
+        width: 100%;
+        border-right: none;
+        border-top: 1px solid #eee;
+    }
+
+    .sidebar.open {
+        display: block;
+    }
+
+    .content {
+        padding: 20px;
+    }
+}
