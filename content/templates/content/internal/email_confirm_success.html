@@ -1,0 +1,14 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}Email подтверждён{% endblock %}
+
+{% block content %}
+<div class="dashboard-card">
+  <h1>✅ Email подтверждён</h1>
+  <p>Теперь вы будете получать уведомления.</p>
+
+  <a href="{% url 'profile' %}" class="btn btn-primary">
+    ← Вернуться в профиль
+  </a>
+</div>
+{% endblock %}

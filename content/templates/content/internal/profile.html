@@ -1,0 +1,88 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-header">
+  <h1>Профиль</h1>
+</div>
+
+<div class="dashboard-card profile-card">
+
+  <!-- ===== ОСНОВНАЯ ИНФОРМАЦИЯ ===== -->
+  <div class="profile-summary">
+    <div class="profile-row">
+      <span class="profile-label">Логин</span>
+      <span class="profile-value">{{ request.user.username }}</span>
+    </div>
+
+    <div class="profile-row">
+      <span class="profile-label">Email</span>
+      <span class="profile-value">
+        {% if profile.email %}
+          {{ profile.email }}
+          {% if profile.email_confirmed %}
+            <span class="status-ok">✔ подтверждён</span>
+          {% else %}
+            <span class="status-warn">⚠ не подтверждён</span>
+          {% endif %}
+        {% else %}
+          <span class="muted">не указан</span>
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== НАСТРОЙКИ ===== -->
+  <form method="post" class="profile-form">
+    {% csrf_token %}
+
+<div class="form-row">
+  <label>Email для уведомлений</label>
+  {{ form.email }}
+
+      {% if profile.email and not profile.email_confirmed %}
+        <div class="status-warn small">
+          ⚠ Email не подтверждён. Уведомления не будут приходить
+        </div>
+
+        <div class="form-row">
+          <button
+            type="submit"
+            name="resend_email"
+            class="btn btn-secondary small"
+          >
+            📧 Отправить письмо ещё раз
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+
+    <div class="form-row checkbox-row">
+      <label>
+        {{ form.notify_new_posts }}
+        <span>Уведомлять о новых публикациях</span>
+      </label>
+    </div>
+
+    <div class="form-row checkbox-row">
+      <label>
+        {{ form.notify_updates }}
+        <span>Уведомлять об обновлениях статей</span>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        💾 Сохранить настройки
+      </button>
+    </div>
+  </form>
+
+</div>
+
+{% endblock %}

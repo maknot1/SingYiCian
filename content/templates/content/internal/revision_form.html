@@ -1,0 +1,21 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block content %}
+
+<div class="editor-tip">
+  💡 Совет: используйте h2 для разделов, h3 для подпунктов. Содержание сформируется автоматически.
+</div>
+
+<h1>Новая версия: {{ post.title }}</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <button type="submit">Сохранить ревизию</button>
+</form>
+
+<p>
+  <a href="{% url 'post_detail' post.slug %}">← Назад к статье</a>
+</p>
+{% endblock %}

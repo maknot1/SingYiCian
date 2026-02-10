@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Школа Синь И Цюань{% endblock %}</title>
+
+    {% load static %}
+    {% load group_tags %}
+    <link rel="stylesheet" href="{% static 'content/base.css' %}">
+</head>
+
+<body>
+
+
+
+<header class="site-header">
+  <div class="header-inner">
+
+    <a href="{% url 'main' %}" class="brand">
+      <img src="{% static 'content/logo.png' %}" class="logo">
+      <div class="brand-text">
+        <div class="brand-title">Рижская школа Синь И Цюань и Тайцзи</div>
+        <div class="brand-subtitle">традиция и внутренняя сила</div>
+      </div>
+    </a>
+
+    <nav class="desktop-nav">
+      <a href="{% url 'main' %}">Главная</a>
+      <a href="{% url 'catalog_sinyi' %}">Синь И Цюань</a>
+      <a href="{% url 'catalog_taiji' %}">Тайцзи</a>
+        <a href="{% url 'profile' %}" class="header-link">
+  Профиль
+</a>
+
+      {% if user|has_group:"Publishers" %}
+        <a href="{% url 'dashboard' %}" class="nav-editor">Редактор</a>
+      {% endif %}
+    </nav>
+
+    <form method="post" action="{% url 'logout' %}">
+      {% csrf_token %}
+      <button class="logout-btn">Выйти</button>
+    </form>
+
+  </div>
+</header>
+
+<div class="body-video-bg">
+  <video autoplay muted loop playsinline>
+    <source src="{% static 'content/video/chinese-river-boat-sunset-moewalls-com.mp4' %}" type="video/mp4">
+  </video>
+</div>
+
+<div class="page">
+
+    {% if user.is_authenticated and not hide_sidebar %}
+      <aside class="sidebar">
+          {% include "content/internal/_sidebar.html" %}
+      </aside>
+    {% endif %}
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+
+<script src="{% static 'content/base.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

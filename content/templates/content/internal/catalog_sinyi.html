@@ -1,0 +1,30 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}Синь И Цюань{% endblock %}
+
+{% block content %}
+
+<div class="page-video-section">
+
+  <div class="page-main page-main-inner">
+
+    <!-- ЛЕВО -->
+    <aside class="main-left">
+      {% include "content/internal/catalog_left.html" %}
+    </aside>
+
+    <!-- ЦЕНТР -->
+    <main class="main-center">
+      {% include "content/internal/catalog_feed.html" %}
+    </main>
+
+    <!-- ПРАВО -->
+    <aside class="main-right">
+      {% include "content/internal/catalog_search.html" %}
+    </aside>
+
+  </div>
+
+</div>
+
+{% endblock %}

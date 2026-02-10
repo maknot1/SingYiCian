@@ -1,0 +1,14 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}Ошибка подтверждения{% endblock %}
+
+{% block content %}
+<div class="dashboard-card">
+  <h1>⚠ Ошибка подтверждения</h1>
+  <p>Ссылка недействительна или устарела.</p>
+
+  <a href="{% url 'profile' %}" class="btn btn-secondary">
+    ← В профиль
+  </a>
+</div>
+{% endblock %}

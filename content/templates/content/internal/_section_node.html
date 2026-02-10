@@ -1,0 +1,8 @@
+<div class="section-node level-{{ level }}">
+  <strong>{{ node.title }}</strong>
+  <span class="muted">({{ node.catalog }})</span>
+
+  {% for child in node.children.all %}
+    {% include "content/internal/_section_node.html" with node=child level=level|add:1 %}
+  {% endfor %}
+</div>

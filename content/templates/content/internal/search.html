@@ -1,0 +1,82 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}
+  Поиск{% if query %}: {{ query }}{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="page-main page-main-inner">
+
+  <!-- ЛЕВАЯ КОЛОНКА -->
+  <aside class="main-left">
+    <div class="side-box">
+      <h4 class="side-title">Поиск</h4>
+
+      <form method="get" action="{% url 'search' %}">
+        <input
+          type="search"
+          name="q"
+          placeholder="Введите слово…"
+          value="{{ query }}"
+        >
+
+        {% if catalog %}
+          <input type="hidden" name="catalog" value="{{ catalog }}">
+        {% endif %}
+
+        <button type="submit" class="btn btn-small">
+          Найти
+        </button>
+      </form>
+
+      {% if catalog %}
+        <p class="muted" style="margin-top: .5rem">
+          Каталог: <strong>{{ catalog }}</strong>
+        </p>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- ЦЕНТР -->
+  <main class="main-center">
+
+    <h2>
+      Результаты поиска
+      {% if query %}
+        по запросу «{{ query }}»
+      {% endif %}
+    </h2>
+
+    {% if results %}
+      {% for post in results %}
+        <div class="activity-card">
+
+          <h3>{{ post.title }}</h3>
+
+          <div class="activity-meta">
+            Раздел: {{ post.section.title }} ·
+            Автор: {{ post.author.username|default:"система" }}
+          </div>
+
+          {% if post.summary %}
+            <p>{{ post.summary }}</p>
+          {% endif %}
+
+          <a href="{% url 'post_detail' post.slug %}" class="activity-link">
+            Открыть
+          </a>
+
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="muted">
+        Ничего не найдено.
+      </p>
+    {% endif %}
+
+  </main>
+
+</div>
+
+{% endblock %}

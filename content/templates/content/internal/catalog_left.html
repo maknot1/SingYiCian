@@ -1,0 +1,29 @@
+<div class="side-box mobile-collapsible">
+  <details open>
+    <summary class="side-title">Разделы</summary>
+
+    <nav class="side-nav">
+      <ul class="side-menu">
+        {% for section in sections %}
+          <li class="side-item">
+            <a href="{% url 'section_detail' section.slug %}" class="side-link">
+              {{ section.title }}
+            </a>
+
+            {% if section.children.exists %}
+              <ul class="side-submenu">
+                {% for child in section.children.all %}
+                  <li>
+                    <a href="{% url 'section_detail' child.slug %}" class="side-sublink">
+                      {{ child.title }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </details>
+</div>

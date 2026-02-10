@@ -1,4 +1,5 @@
 import bleach
+from bleach.css_sanitizer import CSSSanitizer
 
 ALLOWED_TAGS = [
     "p", "br",
@@ -13,12 +14,29 @@ ALLOWED_TAGS = [
 ]
 
 ALLOWED_ATTRIBUTES = {
-    "*": ["class"],
+    "*": ["class", "style"],
+    "img": ["src", "alt", "title", "style"],
     "a": ["href", "title", "target", "rel"],
-    "img": ["src", "alt", "title"],
 }
 
 ALLOWED_PROTOCOLS = ["http", "https", "mailto"]
+
+css_sanitizer = CSSSanitizer(
+    allowed_css_properties=[
+        "color",
+        "background-color",
+
+        "width",
+        "max-width",
+        "height",
+        "float",
+        "margin",
+        "margin-left",
+        "margin-right",
+        "display",
+        "text-align",
+    ]
+)
 
 
 def clean_html(value: str) -> str:
@@ -30,5 +48,6 @@ def clean_html(value: str) -> str:
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRIBUTES,
         protocols=ALLOWED_PROTOCOLS,
+        css_sanitizer=css_sanitizer,
         strip=True,
     )

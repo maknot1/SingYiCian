@@ -1,0 +1,281 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}{{ section.title }}{% endblock %}
+
+{% block content %}
+
+<div class="page-main page-main-inner section-page">
+
+  <!-- ЛЕВАЯ КОЛОНКА -->
+  <aside class="main-left">
+    <div class="side-box">
+      <h4 class="side-title">Раздел</h4>
+      <ul class="side-menu">
+        <li class="active">{{ section.title }}</li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- ЦЕНТР -->
+  <main class="main-center">
+
+    <!-- HERO -->
+    <div class="section-hero">
+      <h1>{{ section.title }}</h1>
+
+      {% if section.description %}
+        <p class="section-lead">{{ section.description }}</p>
+      {% endif %}
+    </div>
+
+
+
+    {% if children_page and children_page.object_list %}
+      <section class="section-block">
+        <h2>Разделы</h2>
+
+        <div class="section-grid">
+          {% for child in children_page %}
+            <a href="{% url 'section_detail' child.slug %}" class="section-card">
+              <h3>{{ child.title }}</h3>
+              {% if child.description %}
+                <p>{{ child.description }}</p>
+              {% endif %}
+            </a>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% if children_page.has_other_pages %}
+        <nav class="pagination">
+          {% if children_page.has_previous %}
+            <a class="page-nav" href="?cpage={{ children_page.previous_page_number }}">←</a>
+          {% endif %}
+
+          {% for num in children_page.paginator.page_range %}
+            {% if num == children_page.number %}
+              <span class="page-number active">{{ num }}</span>
+            {% elif num > children_page.number|add:"-3" and num < children_page.number|add:"3" %}
+              <a class="page-number" href="?cpage={{ num }}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if children_page.has_next %}
+            <a class="page-nav" href="?cpage={{ children_page.next_page_number }}">→</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+
+
+    {% else %}
+
+      {% if page_obj and page_obj.object_list %}
+        <!-- КЛЮЧЕВЫЕ МАТЕРИАЛЫ -->
+        <section class="section-block">
+          <h2>Ключевые материалы</h2>
+
+          <div class="post-grid featured">
+            {% for post in page_obj %}
+              {% if post.is_featured %}
+                <article class="post-card featured">
+                  <a href="{% url 'post_detail' post.slug %}">
+                    <div class="post-card-body">
+                      <h3>{{ post.title }}</h3>
+                      {% if post.summary %}
+                        <p>{{ post.summary }}</p>
+                      {% endif %}
+                    </div>
+                  </a>
+                </article>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+
+      <!-- ВСЕ МАТЕРИАЛЫ -->
+      <section class="section-block">
+        <h2>Материалы раздела</h2>
+
+        {% if query and not page_obj.object_list %}
+          <p class="muted">Ничего не найдено по запросу «{{ query }}»</p>
+        {% endif %}
+
+        <div class="post-grid">
+          {% for post in page_obj %}
+            {% if not post.is_featured %}
+              <article class="post-card">
+                <a href="{% url 'post_detail' post.slug %}">
+                  <div class="post-card-body">
+                    <h3>{{ post.title }}</h3>
+                    {% if post.summary %}
+                      <p>{{ post.summary }}</p>
+                    {% endif %}
+                  </div>
+                </a>
+              </article>
+            {% endif %}
+          {% empty %}
+            <p class="muted">В этом разделе пока нет материалов.</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% if page_obj and page_obj.has_other_pages %}
+        <nav class="pagination">
+          {% if page_obj.has_previous %}
+            <a class="page-nav"
+               href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+              ←
+            </a>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <span class="page-number active">{{ num }}</span>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+              <a class="page-number"
+                 href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">
+                {{ num }}
+              </a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a class="page-nav"
+               href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+              →
+            </a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+    {% endif %}
+
+  </main>
+
+  <!-- ПРАВАЯ КОЛОНКА: ПОИСК (ТОЛЬКО ДЛЯ СТАТЕЙ) -->
+  {% if not children_page or not children_page.object_list %}
+    <aside class="main-right">
+      <div class="side-box search-box">
+        <h4 class="side-title">Поиск</h4>
+
+        <input
+          type="search"
+          id="live-search-input"
+          placeholder="Поиск по разделу…"
+          autocomplete="off"
+        >
+
+        <input type="hidden" id="search-section" value="{{ section.slug }}">
+        <input type="hidden" id="search-catalog" value="{{ section.catalog }}">
+
+        <div id="live-search-results" class="search-results hidden"></div>
+      </div>
+    </aside>
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+{{ block.super }}
+
+<script>
+
+  console.log("LIVE SEARCH INIT");
+
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("live-search-input");
+  const results = document.getElementById("live-search-results");
+
+  if (!input || !results) return; // 🔒 защита
+
+  const sectionInput = document.getElementById("search-section");
+  const catalogInput = document.getElementById("search-catalog");
+
+  let searchParam = "";
+
+  if (sectionInput && sectionInput.value.trim() !== "") {
+    searchParam = `&section=${encodeURIComponent(sectionInput.value.trim())}`;
+  } else if (catalogInput && catalogInput.value.trim() !== "") {
+    searchParam = `&catalog=${encodeURIComponent(catalogInput.value.trim())}`;
+  }
+
+  let timer = null;
+
+  input.addEventListener("input", () => {
+  console.log("INPUT:", input.value);
+    clearTimeout(timer);
+    const query = input.value.trim();
+
+    if (query.length < 2) {
+      hideResults();
+      return;
+    }
+
+    timer = setTimeout(() => runSearch(query), 400);
+  });
+
+  async function runSearch(query) {
+   console.log("SEARCH QUERY:", query, searchParam);
+    try {
+      const res = await fetch(
+        `/api/search/?q=${encodeURIComponent(query)}${searchParam}`,
+        { headers: { "X-Requested-With": "XMLHttpRequest" } }
+      );
+      const data = await res.json();
+      renderResults(data, query);
+    } catch (e) {
+      console.warn("Search failed", e);
+    }
+  }
+
+  function renderResults(items, query) {
+    results.innerHTML = "";
+
+    if (!items.length) {
+      results.innerHTML =
+        `<div class="search-item muted">Ничего не найдено</div>`;
+      results.classList.remove("hidden");
+      return;
+    }
+
+    items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "search-item";
+      div.innerHTML = `
+        <div class="search-title">${highlight(item.title, query)}</div>
+        <div class="search-snippet">${highlight(item.snippet, query)}</div>
+        <div class="search-meta">${item.section}</div>
+      `;
+      div.onclick = () => {
+        window.location.href = `/post/${item.slug}/`;
+      };
+      results.appendChild(div);
+    });
+
+    results.classList.remove("hidden");
+  }
+
+  function highlight(text, query) {
+    const re = new RegExp(`(${escapeReg(query)})`, "ig");
+    return text.replace(re, `<span class="search-highlight">$1</span>`);
+  }
+
+  function escapeReg(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function hideResults() {
+    results.classList.add("hidden");
+    results.innerHTML = "";
+  }
+});
+
+</script>
+
+{% endblock %}

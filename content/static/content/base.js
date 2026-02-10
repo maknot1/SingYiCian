@@ -61,3 +61,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 });
+
+const images = [
+  "/static/content/domik1.jpg",
+  "/static/content/domik2.jpg",
+  "/static/content/domik3.jpg",
+  "/static/content/domik4.jpg"
+];
+
+let currentIndex = 0;
+const img = document.getElementById("rotator-image");
+
+if (img) {
+  setInterval(() => {
+    img.classList.add("fade-out");
+
+    setTimeout(() => {
+      currentIndex = (currentIndex + 1) % images.length;
+      img.src = images[currentIndex];
+      img.classList.remove("fade-out");
+    }, 600);
+
+  }, 60000); // 1 минута
+}

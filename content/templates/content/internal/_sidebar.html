@@ -1,0 +1,73 @@
+{# ===== HOME ===== #}
+{% if sidebar_mode == "home" %}
+
+<h3 class="sidebar-title">Разделы</h3>
+<ul class="sidebar-sections">
+  {% for s in sections %}
+    {% if s.slug %}
+      <li>
+        <a href="{% url 'section_detail' s.slug %}">
+          {{ s.title }}
+        </a>
+      </li>
+    {% else %}
+      <li class="muted">{{ s.title }}</li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
+{# ===== SECTION ===== #}
+{% elif sidebar_mode == "section" %}
+
+<h3 class="sidebar-title active">
+  {{ section.title }}
+</h3>
+
+{% with featured=posts|dictsortreversed:"is_featured" %}
+<ul class="sidebar-posts">
+  {% for p in posts %}
+    <li class="{% if p.is_featured %}featured{% endif %}">
+      <a href="{% url 'post_detail' p.slug %}">
+        {{ p.title }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+{% endwith %}
+
+
+<p class="sidebar-back">
+  <a href="{% url 'main' %}">← На главную</a>
+</p>
+
+{# ===== POST ===== #}
+{% elif sidebar_mode == "post" %}
+
+<div class="toc">
+  <div class="sidebar-title">Содержание</div>
+  <ul id="toc-list"></ul>
+</div>
+
+{% if post.section and post.section.slug %}
+  <h3 class="sidebar-title">
+    <a href="{% url 'section_detail' post.section.slug %}">
+      {{ post.section.title }}
+    </a>
+  </h3>
+{% else %}
+  <h3 class="sidebar-title muted">
+    {{ post.section.title|default:"Без раздела" }}
+  </h3>
+{% endif %}
+
+<ul class="sidebar-posts">
+  {% for p in section_posts %}
+    <li class="{% if p.slug == active_post_slug %}active{% endif %}">
+      <a href="{% url 'post_detail' p.slug %}">
+        {{ p.title }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+
+{% endif %}

@@ -1,0 +1,33 @@
+<h2>Материалы каталога</h2>
+
+{% for post in page_obj %}
+  <div class="activity-card {% if post.is_featured %}featured{% endif %}">
+
+    <div class="activity-header">
+      <span class="activity-date">
+        {{ post.published_at|date:"d.m.Y H:i" }}
+      </span>
+
+      {% if post.is_featured %}
+        <span class="badge-featured">📌 Закреплено</span>
+      {% endif %}
+    </div>
+
+    <h3>{{ post.title }}</h3>
+
+    <div class="activity-meta">
+      Раздел: {{ post.section.title }} ·
+      Автор: {{ post.author.username|default:"система" }}
+    </div>
+
+    <a href="{% url 'post_detail' post.slug %}" class="activity-link">
+      Открыть
+    </a>
+
+  </div>
+
+{% empty %}
+  <p class="muted">
+    Ничего не найдено.
+  </p>
+{% endfor %}

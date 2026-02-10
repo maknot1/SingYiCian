@@ -1,0 +1,253 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}
+  {% if mode == "edit" %}
+    Редактирование раздела
+  {% else %}
+    Создание раздела
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-header">
+  <h1>
+    {% if mode == "edit" %}
+      ✏️ Редактирование раздела
+    {% else %}
+      ➕ Создание раздела
+    {% endif %}
+  </h1>
+
+  <div class="dashboard-actions">
+    <a href="{% url 'section_list' %}" class="btn btn-secondary">
+      ← К списку разделов
+    </a>
+  </div>
+</div>
+
+<div class="dashboard-card">
+
+  {% if error %}
+    <div class="form-errors">
+      ⚠ {{ error }}
+    </div>
+  {% endif %}
+
+  <form method="post" class="editor-form" id="section-editor-form">
+    {% csrf_token %}
+
+    <!-- ================= CATALOG ================= -->
+    <div class="form-row">
+      <label>Каталог</label>
+      <select id="catalog-picker" name="catalog" required>
+        <option value="">— Выберите каталог —</option>
+        <option value="sinyi">Синь И Цюань</option>
+        <option value="taiji">Тайцзи</option>
+      </select>
+    </div>
+
+    <!-- ================= PARENT PICKER ================= -->
+    <div class="form-row">
+      <label>Родительский раздел</label>
+
+      <div class="section-picker">
+        <span id="parent-label" class="muted">
+          Корневой раздел
+        </span>
+
+        <button type="button"
+                id="parent-picker-btn"
+                class="btn btn-secondary">
+          Выбрать
+        </button>
+      </div>
+
+      <input type="hidden" name="parent" id="parent-input">
+
+      <small class="muted">
+        Если не выбран — раздел будет корневым
+      </small>
+    </div>
+
+    <!-- ================= TITLE ================= -->
+    <div class="form-row">
+      <label>Название раздела</label>
+      {{ form.title }}
+    </div>
+
+    <!-- ================= ACTIONS ================= -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        💾 Сохранить
+      </button>
+
+      <a href="{% url 'section_list' %}" class="btn btn-secondary">
+        Отмена
+      </a>
+    </div>
+
+  </form>
+
+  {% if mode == "edit" %}
+    <hr style="margin: 2rem 0; opacity: .3">
+
+    <form method="post"
+          action="{% url 'delete_section' section.slug %}"
+          onsubmit="return confirm('Удалить раздел? В нём не должно быть статей.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">
+        🗑 Удалить раздел
+      </button>
+    </form>
+  {% endif %}
+
+</div>
+
+<!-- ================= SECTION TREE MODAL ================= -->
+<div id="section-tree-modal" class="modal hidden">
+  <div class="modal-overlay"></div>
+
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3>Выбор родительского раздела</h3>
+    </div>
+
+    <div class="modal-body">
+      <div id="section-tree" class="section-tree">
+        Загрузка…
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button"
+              id="section-tree-cancel"
+              class="btn btn-secondary">
+        Отмена
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const catalogPicker = document.getElementById("catalog-picker");
+  const parentInput   = document.getElementById("parent-input");
+  const parentLabel   = document.getElementById("parent-label");
+
+  const modal   = document.getElementById("section-tree-modal");
+  const treeEl  = document.getElementById("section-tree");
+  const openBtn = document.getElementById("parent-picker-btn");
+  const cancel  = document.getElementById("section-tree-cancel");
+
+  let currentCatalog = "";
+  let currentPage = 1;
+  let totalPages  = 1;
+
+  // ===== INIT FROM EDIT MODE =====
+  {% if mode == "edit" and section %}
+    catalogPicker.value = "{{ section.catalog }}";
+    currentCatalog = "{{ section.catalog }}";
+
+    {% if section.parent %}
+      parentInput.value = "{{ section.parent.id }}";
+      parentLabel.textContent = "{{ section.parent.title|escapejs }}";
+      parentLabel.classList.remove("muted");
+    {% endif %}
+  {% endif %}
+
+  // ===== CATALOG CHANGE =====
+  catalogPicker.addEventListener("change", () => {
+    currentCatalog = catalogPicker.value;
+    parentInput.value = "";
+    parentLabel.textContent = "Корневой раздел";
+    parentLabel.classList.add("muted");
+  });
+
+  // ===== OPEN MODAL =====
+  openBtn.addEventListener("click", () => {
+    if (!currentCatalog) {
+      alert("Сначала выберите каталог");
+      return;
+    }
+    modal.classList.remove("hidden");
+    loadPage(1);
+  });
+
+  cancel.addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+
+  // ===== LOAD PAGE =====
+  async function loadPage(page) {
+    treeEl.innerHTML = "Загрузка…";
+
+    const res = await fetch(
+      `/api/sections/tree/?catalog=${currentCatalog}&page=${page}`
+    );
+
+    const data = await res.json();
+    currentPage = data.current;
+    totalPages  = data.pages;
+
+    renderTree(data.data);
+    renderPagination();
+  }
+
+  // ===== RENDER TREE =====
+  function renderTree(roots) {
+    treeEl.innerHTML = "";
+    roots.forEach(root => renderNode(root, 0));
+  }
+
+  function renderNode(node, depth) {
+    const el = document.createElement("div");
+    el.className = "section-node";
+    el.style.marginLeft = `${depth * 16}px`;
+    el.textContent = node.title;
+
+    if (depth >= 2) {
+      el.classList.add("disabled");
+    } else {
+      el.addEventListener("click", () => {
+        parentInput.value = node.id;
+        parentLabel.textContent = node.title;
+        parentLabel.classList.remove("muted");
+        modal.classList.add("hidden");
+      });
+    }
+
+    treeEl.appendChild(el);
+
+    if (node.children && node.children.length) {
+      node.children.forEach(child =>
+        renderNode(child, depth + 1)
+      );
+    }
+  }
+
+  // ===== PAGINATION =====
+  function renderPagination() {
+    if (totalPages <= 1) return;
+
+    const nav = document.createElement("div");
+    nav.className = "section-pagination";
+
+    for (let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = i;
+      if (i === currentPage) btn.classList.add("active");
+      btn.addEventListener("click", () => loadPage(i));
+      nav.appendChild(btn);
+    }
+
+    treeEl.appendChild(nav);
+  }
+
+});
+</script>
+
+
+{% endblock %}

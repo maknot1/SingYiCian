@@ -1,0 +1,70 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}Новая статья{% endblock %}
+
+{% block content %}
+
+<h1>Новая статья</h1>
+
+<p class="form-lead">
+  Создание заготовки статьи. Текст и содержание добавляются на следующем шаге.
+</p>
+
+<form method="post" class="editor-form">
+  {% csrf_token %}
+
+  <div class="form-section">
+    <label>Раздел</label>
+    {{ form.section }}
+  </div>
+
+  <div class="form-section">
+    <label>Заголовок</label>
+    {{ form.title }}
+    <div class="form-hint">
+      Название статьи, отображается в меню и каталоге
+    </div>
+  </div>
+
+  <div class="form-section">
+    <label>Slug (URL)</label>
+    {{ form.slug }}
+    <div class="form-hint">
+      Используется в ссылке. Если оставить пустым - будет создан автоматически
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-section">
+      <label>Статус</label>
+      {{ form.status }}
+    </div>
+
+    <div class="form-section checkbox">
+      <label>
+        {{ form.is_featured }}
+        Закрепить в разделе или на главной
+      </label>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <label>Порядок внутри раздела</label>
+    {{ form.order }}
+    <div class="form-hint">
+      Меньше число - выше в списке. 0 по умолчанию
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn-primary">
+      Создать статью
+    </button>
+
+    <a href="{% url 'dashboard' %}" class="btn-secondary">
+      ← Назад в панель
+    </a>
+  </div>
+</form>
+
+{% endblock %}

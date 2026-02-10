@@ -1,0 +1,63 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}Структура разделов{% endblock %}
+
+{% block content %}
+<h1>Структура разделов</h1>
+
+<div class="section-tree">
+  {% for section in sections %}
+    {% include "content/internal/_section_node.html" with node=section level=0 %}
+  {% empty %}
+    <p class="muted">Разделов нет</p>
+  {% endfor %}
+</div>
+
+<hr>
+
+<div class="section-search-box">
+  <input
+    id="section-search"
+    type="search"
+    placeholder="Поиск раздела"
+    autocomplete="off"
+  >
+  <div id="section-results" class="section-search-results"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("section-search");
+  const list  = document.getElementById("section-results");
+
+  let controller = null;
+
+  input.addEventListener("input", async () => {
+    const q = input.value.trim();
+    list.innerHTML = "";
+
+    if (!q) return;
+
+    // отменяем предыдущий запрос, чтобы не было гонок
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    const res = await fetch(
+      `/api/sections?q=${encodeURIComponent(q)}`,
+      { signal: controller.signal }
+    );
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    data.forEach(s => {
+      const item = document.createElement("div");
+      item.className = "section-search-item";
+      item.textContent = "—".repeat(s.depth) + " " + s.title;
+      list.appendChild(item);
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,507 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block title %}
+  {% if mode == "create" %}Новая статья{% else %}Редактирование статьи{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>
+  {% if mode == "create" %}Новая статья{% else %}Редактирование статьи{% endif %}
+</h1>
+
+<form method="post"
+      enctype="multipart/form-data"
+      class="post-editor-form"
+      id="post-editor-form">
+
+  {% csrf_token %}
+
+
+<!-- ================= CATALOG PICKER ================= -->
+<div class="form-row">
+  <label>Каталог</label>
+
+  <select id="catalog-picker" class="catalog-picker">
+    <option value="">— Выберите каталог —</option>
+    <option value="sinyi">Синь И Цюань</option>
+    <option value="taiji">Тайцзи</option>
+  </select>
+</div>
+
+  <!-- ================= SECTION PICKER ================= -->
+  <div class="form-row">
+    <label>Раздел</label>
+
+    <div class="section-picker">
+      <span id="section-picker-label"
+            class="section-picker-label muted">
+        Раздел не выбран
+      </span>
+
+      <button type="button"
+              id="section-picker-btn"
+              class="btn btn-secondary">
+        Выбрать
+      </button>
+    </div>
+<!-- ================= SECTION TREE MODAL (ВНЕ FORM!) ================= -->
+<div id="section-tree-modal" class="modal hidden">
+  <div class="modal-overlay"></div>
+
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3>Выбор раздела</h3>
+    </div>
+
+    <div class="modal-body">
+      <input type="search"
+             id="section-tree-search"
+             placeholder="Поиск раздела…">
+
+      <div id="section-tree" class="section-tree"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button"
+              class="btn btn-secondary"
+              id="section-tree-cancel">
+        Отмена
+      </button>
+    </div>
+  </div>
+</div>
+
+    <!-- единственный input, который уйдёт в POST -->
+    <input type="hidden" name="section" id="section-input">
+  </div>
+
+  <!-- ================= TITLE ================= -->
+  <div class="form-row">
+    <label>Заголовок</label>
+    {{ form.title }}
+  </div>
+
+  <!-- ================= CONTENT ================= -->
+  <div class="form-row">
+    <label>Текст статьи</label>
+
+    <div class="editor-toolbar" id="editor-toolbar">
+      <button type="button" class="ql-bold"></button>
+      <select class="ql-color"></select>
+      <button type="button" id="btn-uppercase">Aa</button>
+      <button type="button" class="ql-image"></button>
+
+      <button type="button" id="img-plus-10">+10</button>
+      <button type="button" id="img-minus-10">−10</button>
+      <button type="button" id="img-plus-50">+50</button>
+      <button type="button" id="img-minus-50">−50</button>
+
+      <button type="button" id="btn-caption">📝</button>
+      <button type="button" id="btn-delete-image">🗑</button>
+    </div>
+
+    <div id="editor" class="rich-editor"></div>
+    <input type="hidden" name="content" id="content-input">
+  </div>
+
+
+  <!-- ================= STATUS ================= -->
+  <div class="form-row">
+    <label>Статус</label>
+    {{ form.status }}
+  </div>
+<!-- ================= FEATURED ================= -->
+<div class="form-row form-featured">
+
+  <label class="featured-label">
+    {{ form.is_featured }}
+    <span class="featured-title">
+      📌 Закрепить статью в выбранном каталоге
+    </span>
+  </label>
+
+  <div class="featured-hint">
+    Закреплённые статьи отображаются в центре каталога
+    и формируют основной поток материалов.
+  </div>
+
+</div>
+
+
+
+
+  <!-- ================= NOTE ================= -->
+  <div class="form-row">
+    <label>Заметка к версии</label>
+    {{ form.note }}
+  </div>
+
+  <!-- ================= ACTIONS ================= -->
+  <div class="form-actions">
+    <button type="submit">💾 Сохранить</button>
+
+    {% if post %}
+      <a href="{% url 'post_detail' post.slug %}">
+        ← Назад к статье
+      </a>
+    {% else %}
+      <a href="{% url 'dashboard' %}">
+        ← Назад в панель
+      </a>
+    {% endif %}
+  </div>
+
+</form>
+
+
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+
+
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+<script>
+const DRAFT_KEY = "post_editor_draft_create";
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const sectionInput  = document.getElementById("section-input");
+  const sectionLabel  = document.getElementById("section-picker-label");
+  const catalogPicker = document.getElementById("catalog-picker");
+
+  let currentCatalog = ""; // ⭐ NEW
+
+  // ==================================================
+  // HELPERS
+  // ==================================================
+  function getCSRFToken() {
+    const el = document.querySelector('[name=csrfmiddlewaretoken]');
+    return el ? el.value : "";
+  }
+
+  // ==================================================
+  // QUILL INIT
+  // ==================================================
+  const quill = new Quill("#editor", {
+    theme: "snow",
+    modules: {
+      toolbar: {
+        container: "#editor-toolbar",
+        handlers: { image: uploadImage }
+      }
+    }
+  });
+
+  // ==================================================
+  // LOAD EXISTING CONTENT
+  // ==================================================
+  const initialHtml = `{% if post and post.current_revision %}{{ post.current_revision.content|escapejs }}{% endif %}`;
+  if (initialHtml) quill.clipboard.dangerouslyPasteHTML(initialHtml);
+
+  // ==================================================
+  // INIT FROM EXISTING POST
+  // ==================================================
+  {% if post and post.section %}
+    sectionInput.value = "{{ post.section.id }}";
+    sectionLabel.textContent = "{{ post.section.title|escapejs }}";
+    sectionLabel.classList.remove("muted");
+
+    currentCatalog = "{{ post.section.catalog }}";
+    if (catalogPicker) {
+      catalogPicker.value = currentCatalog;
+    }
+  {% endif %}
+
+  // ==================================================
+  // ⭐ NEW: CATALOG CHANGE HANDLER
+  // ==================================================
+  if (catalogPicker) {
+    catalogPicker.addEventListener("change", () => {
+      currentCatalog = catalogPicker.value;
+
+      // сбрасываем выбранный раздел
+      sectionInput.value = "";
+      sectionLabel.textContent = "Раздел не выбран";
+      sectionLabel.classList.add("muted");
+    });
+  }
+  // ==================================================
+  // FEATURED TOGGLE (МИНИМАЛЬНО И РАБОЧЕ)
+  // ==================================================
+  const featuredCheckbox = document.querySelector('[name="is_featured"]');
+
+  function updateFeaturedState() {
+    if (!featuredCheckbox) return;
+
+    if (!currentCatalog) {
+      featuredCheckbox.checked = false;
+      featuredCheckbox.disabled = true;
+    } else {
+      featuredCheckbox.disabled = false;
+    }
+  }
+
+  // при загрузке
+  updateFeaturedState();
+
+  // при смене каталога
+  if (catalogPicker) {
+    catalogPicker.addEventListener("change", () => {
+      updateFeaturedState();
+    });
+  }
+
+  // ==================================================
+  // IMAGE UPLOAD
+  // ==================================================
+  function uploadImage() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch("{% url 'upload_editor_image' %}", {
+        method: "POST",
+        headers: { "X-CSRFToken": getCSRFToken() },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!data.url) return;
+
+      const range = quill.getSelection() || { index: quill.getLength(), length: 0 };
+      quill.insertEmbed(range.index, "image", data.url);
+      quill.insertText(range.index + 1, "\n");
+      quill.setSelection(range.index + 2, 0);
+    };
+  }
+
+  // ==================================================
+  // IMAGE SELECTION FIX
+  // ==================================================
+  let lastImageIndex = null;
+
+  quill.root.addEventListener("click", (e) => {
+    if (e.target.tagName !== "IMG") return;
+    const blot = Quill.find(e.target);
+    if (!blot) return;
+
+    lastImageIndex = quill.getIndex(blot);
+    quill.setSelection(lastImageIndex + 1, 0, "silent");
+  });
+
+  function getSelectedImage() {
+    if (lastImageIndex === null) return null;
+    const [leaf] = quill.getLeaf(lastImageIndex);
+    if (!leaf || leaf.domNode.tagName !== "IMG") return null;
+    return { img: leaf.domNode, index: lastImageIndex };
+  }
+
+  function resizeImage(delta) {
+    const picked = getSelectedImage();
+    if (!picked) return alert("Сначала кликните по изображению");
+
+    const img = picked.img;
+    const current =
+      img.getAttribute("width")
+        ? parseInt(img.getAttribute("width"), 10)
+        : img.getBoundingClientRect().width;
+
+    const next = Math.max(80, current + delta);
+
+    img.setAttribute("width", next);
+    img.style.width = next + "px";
+    img.style.maxWidth = "100%";
+    img.style.height = "auto";
+  }
+
+  document.getElementById("img-plus-10").onclick  = () => resizeImage(+10);
+  document.getElementById("img-minus-10").onclick = () => resizeImage(-10);
+  document.getElementById("img-plus-50").onclick  = () => resizeImage(+50);
+  document.getElementById("img-minus-50").onclick = () => resizeImage(-50);
+
+  document.getElementById("btn-caption").onclick = () => {
+    const picked = getSelectedImage();
+    if (!picked) return alert("Сначала кликните по изображению");
+
+    const insertAt = picked.index + 1;
+    quill.insertText(insertAt, "\nПодпись к изображению\n", { italic: true });
+
+    const [line] = quill.getLine(insertAt + 1);
+    if (line?.domNode) line.domNode.classList.add("img-caption");
+
+    quill.setSelection(insertAt + 2, 0);
+  };
+
+  document.getElementById("btn-delete-image").onclick = () => {
+    const picked = getSelectedImage();
+    if (!picked) return alert("Сначала кликните по изображению");
+
+    quill.deleteText(picked.index, 1);
+    lastImageIndex = null;
+  };
+
+  // ==================================================
+  // UPPERCASE
+  // ==================================================
+  let lastRange = null;
+  quill.on("selection-change", (range) => { if (range) lastRange = range; });
+
+  document.getElementById("btn-uppercase").addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    const range = quill.getSelection() || lastRange;
+    if (!range || range.length === 0) return;
+
+    const text = quill.getText(range.index, range.length);
+    quill.deleteText(range.index, range.length);
+    quill.insertText(range.index, text.toUpperCase());
+    quill.setSelection(range.index, text.length);
+  });
+
+  // ==================================================
+  // AUTOSAVE DRAFT
+  // ==================================================
+  let isDirty = false;
+
+  setInterval(() => {
+    const html = quill.root.innerHTML.trim();
+    if (!html || html === "<p><br></p>") return;
+
+    const draft = {
+      title: document.querySelector('[name="title"]')?.value || "",
+      section: sectionInput.value || "",
+      sectionLabel: sectionLabel.textContent || "",
+      content: html,
+      savedAt: Date.now()
+    };
+
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    isDirty = true;
+  }, 3000);
+
+  window.addEventListener("beforeunload", (e) => {
+    if (!isDirty) return;
+    e.preventDefault();
+    e.returnValue = "";
+  });
+
+  // ==================================================
+  // SUBMIT
+  // ==================================================
+  document.getElementById("post-editor-form").addEventListener("submit", (e) => {
+    const html = quill.root.innerHTML.trim();
+    if (!html || html === "<p><br></p>") {
+      e.preventDefault();
+      alert("Текст статьи пустой");
+      return;
+    }
+
+    document.getElementById("content-input").value = html;
+    localStorage.removeItem(DRAFT_KEY);
+    isDirty = false;
+  });
+
+  // ==================================================
+  // SECTION PICKER (WITH CATALOG FILTER)
+  // ==================================================
+  const pickerBtn = document.getElementById("section-picker-btn");
+  const modal   = document.getElementById("section-tree-modal");
+  const treeEl  = document.getElementById("section-tree");
+  const cancel  = document.getElementById("section-tree-cancel");
+
+  if (pickerBtn && modal && treeEl && cancel) {
+
+    let currentPage = 1;
+    let totalPages  = 1;
+
+    pickerBtn.addEventListener("click", () => {
+      if (!currentCatalog) {
+        alert("Сначала выберите каталог");
+        return;
+      }
+      modal.classList.remove("hidden");
+      loadPage(1);
+    });
+
+    cancel.addEventListener("click", () => {
+      modal.classList.add("hidden");
+    });
+
+    async function loadPage(page) {
+      treeEl.innerHTML = "Загрузка…";
+
+      const res = await fetch(
+        `/api/sections/tree/?page=${page}&catalog=${currentCatalog}`
+      );
+
+      const data = await res.json();
+      currentPage = data.current;
+      totalPages  = data.pages;
+
+      renderTree(data.data);
+      renderPagination();
+    }
+
+    function renderTree(roots) {
+      treeEl.innerHTML = "";
+      roots.forEach(root => appendNode(root, 0));
+    }
+
+    function appendNode(node, depth) {
+      const el = document.createElement("div");
+      el.className = "section-node";
+      el.style.marginLeft = `${depth * 16}px`;
+      el.textContent = node.title;
+
+      if (depth !== 2) {
+        el.classList.add("disabled");
+      } else {
+        el.addEventListener("click", () => {
+          sectionInput.value = node.id;
+          sectionLabel.textContent = node.title;
+          sectionLabel.classList.remove("muted");
+          modal.classList.add("hidden");
+        });
+      }
+
+      treeEl.appendChild(el);
+
+      if (node.children?.length) {
+        node.children.forEach(child => appendNode(child, depth + 1));
+      }
+    }
+
+    function renderPagination() {
+      const nav = document.createElement("div");
+      nav.className = "section-pagination";
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = i;
+        if (i === currentPage) btn.classList.add("active");
+        btn.addEventListener("click", () => loadPage(i));
+        nav.appendChild(btn);
+      }
+
+      treeEl.appendChild(nav);
+    }
+
+  }
+
+});
+</script>
+
+
+
+{% endblock %}

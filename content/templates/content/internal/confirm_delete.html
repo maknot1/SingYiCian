@@ -1,0 +1,16 @@
+{% extends "content/internal/base_internal.html" %}
+
+{% block content %}
+<h2>Удалить статью?</h2>
+
+<p>
+  <strong>{{ post.title }}</strong><br>
+  Раздел: {{ post.section.title }}
+</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" style="color:red">🗑 Удалить</button>
+  <a href="{% url 'dashboard' %}">Отмена</a>
+</form>
+{% endblock %}

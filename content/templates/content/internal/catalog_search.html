@@ -1,0 +1,138 @@
+<div class="side-box search-box">
+  <h4 class="side-title">Поиск</h4>
+
+  <input
+    type="search"
+    id="live-search-input"
+    placeholder="Поиск по каталогу…"
+    autocomplete="off"
+  >
+
+  <input
+    type="hidden"
+    id="search-catalog"
+    value="{{ active_catalog }}"
+  >
+
+  <div id="live-search-results" class="search-results hidden"></div>
+</div>
+
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const input   = document.getElementById("live-search-input");
+  const results = document.getElementById("live-search-results");
+  const catalogInput = document.getElementById("search-catalog");
+
+  let timer = null;
+
+  function getCatalog() {
+    return catalogInput ? catalogInput.value : "";
+  }
+
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+
+    const query = input.value.trim();
+
+    if (query.length < 2) {
+      hideResults();
+      return;
+    }
+
+    timer = setTimeout(() => runSearch(query), 500);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") e.preventDefault();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-box")) hideResults();
+  });
+
+  async function runSearch(query) {
+    const catalog = getCatalog();
+
+    try {
+      const res = await fetch(
+        `/api/search/?q=${encodeURIComponent(query)}&catalog=${encodeURIComponent(catalog)}`,
+        { headers: { "X-Requested-With": "XMLHttpRequest" } }
+      );
+
+      const data = await res.json();
+      renderResults(data, query, catalog);
+    } catch (e) {
+      console.warn("Search failed", e);
+    }
+  }
+
+  function renderResults(items, query, catalog) {
+    results.innerHTML = "";
+
+    if (!items.length) {
+      results.innerHTML =
+        `<div class="search-item muted">Ничего не найдено</div>`;
+      results.classList.remove("hidden");
+      return;
+    }
+
+    items.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "search-item";
+
+      div.innerHTML = `
+        <div class="search-title">
+          ${highlight(item.title, query)}
+        </div>
+        <div class="search-snippet">
+          ${highlight(item.snippet, query)}
+        </div>
+        <div class="search-meta">
+          ${item.section}
+        </div>
+      `;
+
+      div.addEventListener("click", () => {
+        window.location.href = `/post/${item.slug}/`;
+      });
+
+      results.appendChild(div);
+    });
+
+    // 👇 показать все (НЕ ТЕРЯЯ КАТАЛОГ)
+    const more = document.createElement("div");
+    more.className = "search-more";
+    more.innerHTML = `
+      <span class="search-more-text">Показать все результаты</span>
+      <span class="search-more-arrow">→</span>
+    `;
+    more.addEventListener("click", () => {
+      window.location.href =
+        `/search/?q=${encodeURIComponent(query)}&catalog=${encodeURIComponent(catalog)}`;
+    });
+
+    results.appendChild(more);
+    results.classList.remove("hidden");
+  }
+
+  function highlight(text, query) {
+    const re = new RegExp(`(${escapeReg(query)})`, "ig");
+    return text.replace(re, `<span class="search-highlight">$1</span>`);
+  }
+
+  function escapeReg(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function hideResults() {
+    results.classList.add("hidden");
+    results.innerHTML = "";
+  }
+});
+</script>
+
+{% endblock %}
+

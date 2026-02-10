@@ -1,0 +1,70 @@
+{% load tz %}
+
+{% for post in page_obj %}
+  <article class="activity-card {{ post.last_action }}">
+
+    <header class="activity-header">
+      <div class="activity-dates">
+        <span>
+          📌 {{ post.published_at|localtime|date:"d.m.Y H:i" }}
+        </span>
+
+        {% if post.updated_at %}
+          <span class="activity-updated">
+            ✏️ {{ post.updated_at|localtime|date:"d.m.Y H:i" }}
+          </span>
+        {% endif %}
+      </div>
+    </header>
+
+    <h3 class="activity-title">
+      {{ post.title }}
+    </h3>
+
+    <div class="activity-meta">
+      <span>Раздел: <strong>{{ post.section.title }}</strong></span>
+      <span>·</span>
+      <span>Автор: {{ post.author.username|default:"система" }}</span>
+    </div>
+
+    <div class="activity-actions">
+      <a href="{% url 'post_detail' post.slug %}" class="activity-link">
+        Открыть →
+      </a>
+    </div>
+
+  </article>
+{% empty %}
+  <p class="muted">Публикаций пока нет</p>
+{% endfor %}
+
+{% if page_obj and page_obj.has_other_pages %}
+<nav class="pagination">
+
+  {% if page_obj.has_previous %}
+    <a class="page-nav"
+       href="?page={{ page_obj.previous_page_number }}">
+      ←
+    </a>
+  {% endif %}
+
+  {% for num in page_obj.paginator.page_range %}
+    {% if num == page_obj.number %}
+      <span class="page-number active">{{ num }}</span>
+    {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+      <a class="page-number"
+         href="?page={{ num }}">
+        {{ num }}
+      </a>
+    {% endif %}
+  {% endfor %}
+
+  {% if page_obj.has_next %}
+    <a class="page-nav"
+       href="?page={{ page_obj.next_page_number }}">
+      →
+    </a>
+  {% endif %}
+
+</nav>
+{% endif %}

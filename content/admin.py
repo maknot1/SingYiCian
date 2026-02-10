@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Section, Tag, Post, PostImage, PostRevision
+from .models import Section, Post, PostImage, PostRevision
 
 
 @admin.register(Section)
@@ -11,12 +11,6 @@ class SectionAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description')
     prepopulated_fields = {'slug': ('title',)}
 
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug')
-    search_fields = ('title',)
-    prepopulated_fields = {'slug': ('title',)}
 
 
 class PostImageInline(admin.TabularInline):
@@ -36,10 +30,10 @@ class PostRevisionInline(admin.TabularInline):
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'section', 'status', 'is_featured', 'published_at', 'updated_at')
-    list_filter = ('status', 'section', 'is_featured', 'tags')
+    list_filter = ('status', 'section', 'is_featured',)
     search_fields = ('title', 'summary')
     list_editable = ('status', 'is_featured')
-    autocomplete_fields = ('tags',)
+    autocomplete_fields = ('section',)
     prepopulated_fields = {'slug': ('title',)}
     inlines = [PostImageInline, PostRevisionInline]
     date_hierarchy = 'published_at'
@@ -49,7 +43,7 @@ class PostAdmin(admin.ModelAdmin):
             'fields': ('section', 'title', 'slug', 'author')
         }),
         ('Кратко и медиа', {
-            'fields': ('summary', 'cover_image', 'tags')
+            'fields': ('summary', 'cover_image',)
         }),
         ('Публикация', {
             'fields': ('status', 'published_at', 'is_featured', 'order')

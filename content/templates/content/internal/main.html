@@ -1,0 +1,25 @@
+{% extends "content/internal/base_internal.html" %}
+{% load static %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+
+<div class="page-video-section">
+
+  <!-- КОНТЕНТ ПОВЕРХ -->
+  <div class="page-main page-main-inner">
+
+    <aside class="main-left">
+      {% include "content/internal/main_left.html" %}
+    </aside>
+
+    <main class="main-center">
+      {% include "content/internal/main_feed.html" %}
+    </main>
+
+  </div>
+
+</div>
+
+{% endblock %}
