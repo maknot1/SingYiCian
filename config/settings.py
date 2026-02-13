@@ -33,7 +33,7 @@ ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1,.onrender.com"
 ).split(",")
-
+print("ALLOWED_HOSTS =", ALLOWED_HOSTS)
 # Application definition
 
 INSTALLED_APPS = [

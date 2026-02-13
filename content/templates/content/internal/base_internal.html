@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Школа Синь И Цюань{% endblock %}</title>
 
     {% load static %}
@@ -11,35 +12,54 @@
 
 <body>
 
-
-
 <header class="site-header">
   <div class="header-inner">
 
     <a href="{% url 'main' %}" class="brand">
-      <img src="{% static 'content/logo.png' %}" class="logo">
+      <img src="{% static 'content/logo.png' %}" class="logo" alt="Логотип">
       <div class="brand-text">
         <div class="brand-title">Рижская школа Синь И Цюань и Тайцзи</div>
         <div class="brand-subtitle">традиция и внутренняя сила</div>
       </div>
     </a>
 
-    <nav class="desktop-nav">
-      <a href="{% url 'main' %}">Главная</a>
-      <a href="{% url 'catalog_sinyi' %}">Синь И Цюань</a>
-      <a href="{% url 'catalog_taiji' %}">Тайцзи</a>
-        <a href="{% url 'profile' %}" class="header-link">
-  Профиль
-</a>
+    <!-- burger button -->
+    <button
+      class="burger"
+      type="button"
+      aria-label="Открыть меню"
+      aria-controls="navMenu"
+      aria-expanded="false"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-      {% if user|has_group:"Publishers" %}
-        <a href="{% url 'dashboard' %}" class="nav-editor">Редактор</a>
-      {% endif %}
-    </nav>
+        <nav class="desktop-nav" id="navMenu">
+          <a href="{% url 'main' %}">Главная</a>
+          <a href="{% url 'catalog_sinyi' %}">Синь И Цюань</a>
+          <a href="{% url 'catalog_taiji' %}">Тайцзи</a>
+          <a href="{% url 'profile' %}">Профиль</a>
+
+          <div class="nav-divider"></div>
+
+          {% if user|has_group:"Publishers" %}
+            <a href="{% url 'dashboard' %}">Редактор</a>
+          {% endif %}
+
+          {% if user.is_authenticated and not hide_sidebar %}
+            <div class="nav-divider"></div>
+            <div class="nav-mobile-catalogs">
+              {% include "content/internal/_sidebar.html" %}
+            </div>
+          {% endif %}
+        </nav>
+
 
     <form method="post" action="{% url 'logout' %}">
       {% csrf_token %}
-      <button class="logout-btn">Выйти</button>
+      <button class="logout-btn" type="submit">Выйти</button>
     </form>
 
   </div>
@@ -65,9 +85,7 @@
 
 </div>
 
-
 <script src="{% static 'content/base.js' %}"></script>
-
 {% block extra_js %}{% endblock %}
 
 </body>

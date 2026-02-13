@@ -1,106 +1,195 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Вход</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Вход</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {% load static %}
+  {% load static %}
 
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    body {
+      margin: 0;
+      min-height: 100vh;
 
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-            /* 🔥 ФОН С ДРАКОНОМ */
-            background-image:
-                linear-gradient(
-                    rgba(60, 10, 10, 0.65),
-                    rgba(60, 10, 10, 0.65)
-                ),
-                url("{% static 'content/drakon.jpg' %}");
 
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
-        .login-box {
-            background: rgba(255, 255, 255, 0.96);
-            padding: 32px 36px;
-            border-radius: 14px;
-            width: 100%;
-            max-width: 360px;
+      /* Один дракон - здесь и только здесь */
+      background-image:
+        radial-gradient(1200px 700px at 20% 20%, rgba(255, 220, 160, 0.18), rgba(0,0,0,0)),
+        linear-gradient(rgba(35, 8, 8, 0.55), rgba(35, 8, 8, 0.70)),
+        url("{% static 'content/drakon.jpg' %}");
 
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.45);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
 
-            backdrop-filter: blur(2px);
-        }
+      padding: 18px; /* чтобы на мобилке не упиралось в края */
+    }
 
-        h1 {
-            margin-top: 0;
-            margin-bottom: 22px;
-            font-size: 22px;
-            text-align: center;
-            color: #222;
-        }
+    .login-box {
+      width: 100%;
+      max-width: 460px;
+      margin-top: clamp(44px, 10vh, 120px);
 
-        form p {
-            margin-bottom: 14px;
-        }
+      border-radius: 22px;
+      overflow: hidden;
 
-        input {
-            width: 100%;
-            padding: 8px 10px;
-            margin-top: 4px;
+      /* стеклянная карточка */
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
 
-            border-radius: 6px;
-            border: 1px solid #bbb;
-            font-size: 14px;
-        }
+      box-shadow:
+        0 18px 60px rgba(0,0,0,0.45),
+        inset 0 0 0 1px rgba(255,255,255,0.35);
 
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 18px;
+      /* на маленьких экранах пусть форма не режется */
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+    }
 
-            background: #6b0f0f;
-            color: #f5d7a1;
+    /* верхняя “сочная” планка вместо второго дракона */
+    .login-top {
+      padding: 18px 20px;
+      background: linear-gradient(135deg, rgba(122,18,18,0.96), rgba(90,12,12,0.96));
+      color: #f5d7a1;
+      border-bottom: 1px solid rgba(255,255,255,0.18);
+    }
 
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
+    .login-top .title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
 
-            box-shadow:
-                0 2px 6px rgba(0,0,0,0.3);
-        }
+    .login-top .sub {
+      margin: 6px 0 0;
+      font-size: 13px;
+      opacity: 0.92;
+      line-height: 1.35;
+    }
 
-        button:hover {
-            background: #7a1a1a;
-        }
-    </style>
+    .login-content {
+      padding: 22px 22px 24px;
+    }
+
+    .login-content h1 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      text-align: center;
+      color: #1f1f1f;
+      font-weight: 800;
+    }
+
+    form p {
+      margin: 0 0 14px;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: rgba(0,0,0,0.70);
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.18);
+      font-size: 15px;
+      background: rgba(255,255,255,0.90);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, transform .12s;
+    }
+
+    input:focus {
+      border-color: rgba(122,18,18,0.55);
+      box-shadow: 0 0 0 3px rgba(122,18,18,0.14);
+      transform: translateY(-1px);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 14px;
+      margin-top: 14px;
+
+      background: linear-gradient(180deg, #7a1212, #5a0c0c);
+      color: #f5d7a1;
+
+      border: 1px solid rgba(245, 215, 161, 0.55);
+      border-radius: 14px;
+
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      transition: transform .15s, box-shadow .2s, filter .2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+      box-shadow: 0 16px 30px rgba(0,0,0,0.28);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.22);
+    }
+
+    /* если вдруг Django выведет ошибки */
+    .errorlist {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(122,18,18,0.08);
+      border: 1px solid rgba(122,18,18,0.18);
+      color: #5a0c0c;
+      list-style: none;
+      font-size: 14px;
+    }
+
+    /* мобилка */
+    @media (max-width: 520px) {
+      .login-box { max-width: 100%; margin-top: clamp(56px, 12vh, 140px); }
+      .login-top { padding: 16px 16px; }
+      .login-content { padding: 18px 16px 18px; }
+      .login-content h1 { font-size: 20px; }
+    }
+  </style>
 </head>
 
 <body>
 
-    <div class="login-box">
-        <h1>Вход</h1>
-
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Войти</button>
-        </form>
+  <div class="login-box">
+    <div class="login-top">
+      <p class="title">Рижская школа Синь И Цюань и Тайцзи</p>
+      <p class="sub">традиция и внутренняя сила</p>
     </div>
+
+    <div class="login-content">
+      <h1>Вход</h1>
+
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn" type="submit">Войти</button>
+      </form>
+    </div>
+  </div>
 
 </body>
 </html>
