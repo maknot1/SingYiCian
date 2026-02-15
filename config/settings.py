@@ -33,7 +33,26 @@ ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1,.onrender.com"
 ).split(",")
-print("ALLOWED_HOSTS =", ALLOWED_HOSTS)
+
+CSRF_TRUSTED_ORIGINS = (
+    os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if not DEBUG else []
+)
+# Если потом появится домен и HTTPS через Nginx/Let's Encrypt:
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+USE_HTTPS = os.getenv("USE_HTTPS", "false").lower() == "true"
+
+SESSION_COOKIE_SECURE = USE_HTTPS
+CSRF_COOKIE_SECURE = USE_HTTPS
+
+SECURE_SSL_REDIRECT = USE_HTTPS
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -83,13 +102,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DB_SSL_REQUIRE = os.getenv("DB_SSL_REQUIRE", "false").lower() == "true"
+
 DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
-        ssl_require=not DEBUG,
+        ssl_require=DB_SSL_REQUIRE,
     )
 }
+
 
 
 
@@ -134,7 +156,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MIDDLEWARE.insert(
@@ -170,4 +192,5 @@ DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
     "SingYiCian <no-reply@singyician>"
 )
+
 
