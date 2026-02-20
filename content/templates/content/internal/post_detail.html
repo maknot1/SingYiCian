@@ -3,22 +3,35 @@
 {% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
-<article class="article-content">
+<div class="article-wrapper">
+  <article class="article-content">
 
-  <h1>{{ post.title }}</h1>
+    <header class="article-header">
+      <h1>{{ post.title }}</h1>
+    </header>
 
-  {% if revision %}
-    {{ revision.content|safe }}
-  {% else %}
-    <p>Контент пока не опубликован.</p>
+    <div class="article-body">
+      {% if revision %}
+        {{ revision.content|safe }}
+      {% else %}
+        <p>Контент пока не опубликован.</p>
+      {% endif %}
+    </div>
 
-  {% endif %}
+    <div class="article-actions">
+      {% if post.section %}
+        <a href="{% url 'section_detail' post.section.slug %}" class="action-btn back-btn">
+          ← В раздел
+        </a>
+      {% endif %}
 
-  {% if user.is_authenticated and user.is_staff %}
-    <hr>
-    <a href="{% url 'edit_post' post.slug %}">✏️ Редактировать</a>
-  {% endif %}
+      {% if user.is_authenticated and user.is_staff %}
+        <a href="{% url 'edit_post' post.slug %}" class="action-btn edit-btn">
+          Редактировать
+        </a>
+      {% endif %}
+    </div>
 
-</article>
+  </article>
+</div>
 {% endblock %}
-

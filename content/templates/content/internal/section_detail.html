@@ -6,15 +6,32 @@
 
 <div class="page-main page-main-inner section-page">
 
-  <!-- ЛЕВАЯ КОЛОНКА -->
-  <aside class="main-left">
-    <div class="side-box">
-      <h4 class="side-title">Раздел</h4>
-      <ul class="side-menu">
-        <li class="active">{{ section.title }}</li>
-      </ul>
-    </div>
-  </aside>
+<!-- ЛЕВАЯ КОЛОНКА -->
+<aside class="main-left">
+
+  <div class="side-box">
+
+    <h4 class="side-title">Разделы</h4>
+
+    <ul class="side-menu">
+
+      {% for parent in ancestors %}
+        <li class="side-item level-{{ forloop.counter }}">
+          <a href="{% url 'section_detail' parent.slug %}">
+            {{ parent.title }}
+          </a>
+        </li>
+      {% endfor %}
+
+      <li class="side-item active level-current">
+        {{ section.title }}
+      </li>
+
+    </ul>
+
+  </div>
+
+</aside>
 
   <!-- ЦЕНТР -->
   <main class="main-center">

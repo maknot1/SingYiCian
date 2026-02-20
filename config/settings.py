@@ -34,10 +34,8 @@ ALLOWED_HOSTS = os.getenv(
     "localhost,127.0.0.1,.onrender.com"
 ).split(",")
 
-CSRF_TRUSTED_ORIGINS = (
-    os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if not DEBUG else []
-)
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+
 # Если потом появится домен и HTTPS через Nginx/Let's Encrypt:
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

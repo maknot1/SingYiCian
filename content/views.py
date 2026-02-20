@@ -334,18 +334,19 @@ def section_detail(request, slug):
     section = get_object_or_404(Section, slug=slug)
     query = request.GET.get("q", "").strip()
 
-    # ===== 1. ДОЧЕРНИЕ РАЗДЕЛЫ =====
+    # ===== ЦЕПОЧКА РОДИТЕЛЕЙ =====
+    ancestors = section.get_ancestors()
+
+    # ===== ДОЧЕРНИЕ РАЗДЕЛЫ =====
     children_qs = section.children.order_by("order", "title")
 
     children_page = None
     page_obj = None
 
-    # 🔹 ЕСЛИ ЭТО КОНТЕЙНЕР (есть дети)
     if children_qs.exists():
         paginator = Paginator(children_qs, 10)
         children_page = paginator.get_page(request.GET.get("cpage"))
 
-    # 🔹 ЕСЛИ ЭТО КОНТЕНТНЫЙ РАЗДЕЛ
     else:
         posts = (
             Post.objects
@@ -359,7 +360,6 @@ def section_detail(request, slug):
             .select_related("current_revision", "author")
         )
 
-        # 🔍 ПОИСК ТОЛЬКО В ЭТОМ РАЗДЕЛЕ
         if query:
             posts = posts.filter(
                 Q(title__icontains=query) |
@@ -382,6 +382,7 @@ def section_detail(request, slug):
         "content/internal/section_detail.html",
         {
             "section": section,
+            "ancestors": ancestors,
             "children_page": children_page,
             "page_obj": page_obj,
             "query": query,

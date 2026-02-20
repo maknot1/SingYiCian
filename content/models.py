@@ -79,6 +79,7 @@ class Section(models.Model):
         blank=True,
         related_name="children",
         on_delete=models.CASCADE,
+        db_index=True,
         verbose_name="Родительский раздел"
     )
 
@@ -89,6 +90,19 @@ class Section(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_ancestors(self):
+        ancestors = []
+        node = self.parent
+
+        while node:
+            ancestors.insert(0, node)
+            node = node.parent
+
+        return ancestors
+
+    def get_absolute_url(self):
+        return reverse("section_detail", kwargs={"slug": self.slug})
 
     def get_depth(self):
         depth = 0
