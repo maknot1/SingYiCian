@@ -157,12 +157,12 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MIDDLEWARE.insert(
-    MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1,
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-)
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+if not DEBUG:
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1,
+        "whitenoise.middleware.WhiteNoiseMiddleware",
+    )
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Медиа контент
 MEDIA_URL = '/media/'
