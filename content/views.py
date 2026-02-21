@@ -389,7 +389,6 @@ def section_detail(request, slug):
             "sidebar_mode": "section",
         }
     )
-
 @login_required
 def post_detail(request, slug):
     qs = Post.objects.select_related("section", "author", "current_revision")
