@@ -25,11 +25,11 @@
         </a>
       {% endif %}
 
-      {% if user.is_authenticated and user.is_staff %}
-        <a href="{% url 'edit_post' post.slug %}" class="action-btn edit-btn">
-          Редактировать
-        </a>
-      {% endif %}
+        {% if can_edit %}
+          <a href="{% url 'edit_post' post.slug %}" class="action-btn edit-btn">
+            Редактировать
+          </a>
+        {% endif %}
     </div>
 
   </article>
