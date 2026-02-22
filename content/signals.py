@@ -10,6 +10,7 @@ from .emails import send_new_post_email, send_post_update_email  # <-- важн�
 
 User = get_user_model()
 
+print("SIGNALS LOADED", __name__)
 
 @receiver(post_save, sender=User, dispatch_uid="create_user_profile_once")
 def create_user_profile(sender, instance, created, **kwargs):
@@ -40,39 +41,35 @@ def notify_new_post(sender, instance, created, **kwargs):
 
 
 
-@receiver(post_save, sender=PostRevision)
+@receiver(
+    post_save,
+    sender=PostRevision,
+    dispatch_uid="notify_post_update_once"
+)
 def notify_post_update(sender, instance, created, **kwargs):
     if not created:
         return
 
     post = instance.post
 
-    # ⛔ если пост только что создан — это часть публикации, не обновление
+    # если пост только что создан — это часть публикации, не обновление
     if cache.get(f"post_just_created:{post.pk}"):
         return
 
-    # ⛔ обновления шлём только для опубликованных статей
+    # обновления шлём только для опубликованных статей
     if post.status != Post.Status.PUBLISHED:
         return
 
-    # ⛔ если нет автора — некому слать
-    author = post.author
-    if not author:
-        return
-
-    # ⛔ если у автора нет профиля — тихо выходим
-    try:
-        profile = author.profile
-    except UserProfile.DoesNotExist:
-        return
-
     def _send():
-        if (
-            profile.email
-            and profile.email_confirmed
-            and profile.notify_updates
-        ):
-            send_post_update_email(profile.email, post)
+        profiles = UserProfile.objects.select_related("user")
+
+        for profile in profiles:
+            if (
+                profile.email
+                and profile.email_confirmed
+                and profile.notify_updates
+            ):
+                send_post_update_email(profile.email, post)
 
     transaction.on_commit(_send)
 

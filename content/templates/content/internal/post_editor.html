@@ -158,11 +158,6 @@
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
-
-
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-
 <script>
 const DRAFT_KEY = "post_editor_draft_create";
 
@@ -185,6 +180,51 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==================================================
   // QUILL INIT
   // ==================================================
+
+// ===== FIX: real image blot with width support =====
+  const BlockEmbed = Quill.import('blots/block/embed');
+
+  class ImageBlot extends BlockEmbed {
+    static blotName = 'image';
+    static tagName = 'img';
+
+    static create(value) {
+      let node = super.create();
+
+      if (typeof value === 'string') {
+        node.setAttribute('src', value);
+      } else {
+        node.setAttribute('src', value.url);
+        if (value.width) {
+          node.setAttribute('width', value.width);
+        }
+      }
+
+      return node;
+    }
+
+    static value(node) {
+      return {
+        url: node.getAttribute('src'),
+        width: node.getAttribute('width')
+      };
+    }
+
+    format(name, value) {
+      if (name === 'width') {
+        if (value) {
+          this.domNode.setAttribute('width', value);
+        } else {
+          this.domNode.removeAttribute('width');
+        }
+      } else {
+        super.format(name, value);
+      }
+    }
+  }
+
+  Quill.register(ImageBlot, true);
+
   const quill = new Quill("#editor", {
     theme: "snow",
     modules: {
@@ -199,8 +239,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // LOAD EXISTING CONTENT
   // ==================================================
   const initialHtml = `{% if post and post.current_revision %}{{ post.current_revision.content|escapejs }}{% endif %}`;
-  if (initialHtml) quill.clipboard.dangerouslyPasteHTML(initialHtml);
 
+  if (initialHtml) {
+    quill.root.innerHTML = initialHtml;
+    quill.update();
+
+    // восстановление размеров изображений после того, как Quill "нормализует" DOM
+    setTimeout(() => {
+      document.querySelectorAll("#editor img").forEach((img) => {
+        const w = img.getAttribute("width") || img.dataset.width;
+        if (w) {
+          img.style.width = w + "px";
+          img.style.maxWidth = "100%";
+          img.style.height = "auto";
+        }
+      });
+    }, 50);
+  }
   // ==================================================
   // INIT FROM EXISTING POST
   // ==================================================
@@ -320,11 +375,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const next = Math.max(80, current + delta);
 
     img.setAttribute("width", next);
+    img.setAttribute("data-width", next);
     img.style.width = next + "px";
     img.style.maxWidth = "100%";
     img.style.height = "auto";
-  }
 
+    quill.update("user");
+  }
+  function normalizeImagesBeforeSave() {
+    document.querySelectorAll("#editor img").forEach((img) => {
+      const w =
+        img.getAttribute("width") ||
+        img.dataset.width ||
+        (img.style.width ? img.style.width.replace("px", "") : "");
+
+      if (w) {
+        img.setAttribute("width", w);
+        img.setAttribute("data-width", w);
+        img.style.width = w + "px";
+        img.style.maxWidth = "100%";
+        img.style.height = "auto";
+      }
+    });
+  }
   document.getElementById("img-plus-10").onclick  = () => resizeImage(+10);
   document.getElementById("img-minus-10").onclick = () => resizeImage(-10);
   document.getElementById("img-plus-50").onclick  = () => resizeImage(+50);
@@ -374,7 +447,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let isDirty = false;
 
   setInterval(() => {
-    const html = quill.root.innerHTML.trim();
+    quill.update("user");
+    normalizeImagesBeforeSave();
+    const html = quill.root.innerHTML;
     if (!html || html === "<p><br></p>") return;
 
     const draft = {
@@ -398,64 +473,97 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==================================================
   // SUBMIT
   // ==================================================
-  document.getElementById("post-editor-form").addEventListener("submit", (e) => {
-    const html = quill.root.innerHTML.trim();
-    if (!html || html === "<p><br></p>") {
-      e.preventDefault();
-      alert("Текст статьи пустой");
-      return;
-    }
+    document.getElementById("post-editor-form").addEventListener("submit", (e) => {
 
-    document.getElementById("content-input").value = html;
-    localStorage.removeItem(DRAFT_KEY);
-    isDirty = false;
-  });
+      quill.update("user");
+      normalizeImagesBeforeSave();
+
+      const html = quill.root.innerHTML;
+
+      if (!html || html === "<p><br></p>") {
+        e.preventDefault();
+        alert("Текст статьи пустой");
+        return;
+      }
+
+      if (!sectionInput.value) {
+        e.preventDefault();
+        alert("Выберите раздел статьи");
+        return;
+      }
+
+      document.getElementById("content-input").value = html;
+      localStorage.removeItem(DRAFT_KEY);
+      isDirty = false;
+    });
 
   // ==================================================
   // SECTION PICKER (WITH CATALOG FILTER)
   // ==================================================
-  const pickerBtn = document.getElementById("section-picker-btn");
-  const modal   = document.getElementById("section-tree-modal");
-  const treeEl  = document.getElementById("section-tree");
-  const cancel  = document.getElementById("section-tree-cancel");
+    const pickerBtn = document.getElementById("section-picker-btn");
+    const modal   = document.getElementById("section-tree-modal");
+    const searchInput = document.getElementById("section-tree-search");
+    const treeEl  = document.getElementById("section-tree");
+    const cancel  = document.getElementById("section-tree-cancel");
 
-  if (pickerBtn && modal && treeEl && cancel) {
+    function applySearchFilter() {
+      if (!searchInput) return;
 
-    let currentPage = 1;
-    let totalPages  = 1;
+      const query = searchInput.value.toLowerCase();
 
-    pickerBtn.addEventListener("click", () => {
-      if (!currentCatalog) {
-        alert("Сначала выберите каталог");
-        return;
+      document.querySelectorAll(".section-node").forEach(node => {
+        const text = node.textContent.toLowerCase();
+        const match = text.includes(query);
+        node.style.display = match ? "" : "none";
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("input", applySearchFilter);
+    }
+
+    if (pickerBtn && modal && treeEl && cancel) {
+
+      let currentPage = 1;
+      let totalPages  = 1;
+
+      pickerBtn.addEventListener("click", () => {
+        if (!currentCatalog) {
+          alert("Сначала выберите каталог");
+          return;
+        }
+
+        if (searchInput) searchInput.value = "";
+
+        modal.classList.remove("hidden");
+        loadPage(1);
+      });
+
+      cancel.addEventListener("click", () => {
+        modal.classList.add("hidden");
+      });
+
+      async function loadPage(page) {
+        treeEl.innerHTML = "Загрузка…";
+
+        const res = await fetch(
+          `/api/sections/tree/?page=${page}&catalog=${currentCatalog}`
+        );
+
+        const data = await res.json();
+        currentPage = data.current;
+        totalPages  = data.pages;
+
+        renderTree(data.data);
+        renderPagination();
       }
-      modal.classList.remove("hidden");
-      loadPage(1);
-    });
 
-    cancel.addEventListener("click", () => {
-      modal.classList.add("hidden");
-    });
+      function renderTree(roots) {
+        treeEl.innerHTML = "";
+        roots.forEach(root => appendNode(root, 0));
 
-    async function loadPage(page) {
-      treeEl.innerHTML = "Загрузка…";
-
-      const res = await fetch(
-        `/api/sections/tree/?page=${page}&catalog=${currentCatalog}`
-      );
-
-      const data = await res.json();
-      currentPage = data.current;
-      totalPages  = data.pages;
-
-      renderTree(data.data);
-      renderPagination();
-    }
-
-    function renderTree(roots) {
-      treeEl.innerHTML = "";
-      roots.forEach(root => appendNode(root, 0));
-    }
+        applySearchFilter(); // ⭐ важно
+      }
 
     function appendNode(node, depth) {
       const el = document.createElement("div");

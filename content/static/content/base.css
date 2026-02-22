@@ -2549,3 +2549,63 @@ img.img-full {
   flex-wrap: wrap;
 }
 
+.post-archived {
+  opacity: 0.55;
+  filter: grayscale(40%);
+}
+
+.badge-archived {
+  background: #c0392b;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+summary::after {
+  content: "▾";
+  float: right;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+
+.side-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.side-toggle {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  user-select: none;
+}
+
+.side-submenu {
+  display: none;
+  margin: 6px 0 0 12px;
+  padding-left: 10px;
+}
+
+.side-submenu.is-open {
+  display: block;
+}
+
+/* чтобы + выглядел как “открыто/закрыто” */
+.side-toggle[aria-expanded="true"] {
+  transform: rotate(45deg);
+}

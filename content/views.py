@@ -26,6 +26,30 @@ from django.db.models.functions import Coalesce
 
 register = template.Library()
 
+def get_sidebar_context(section=None, catalog=None):
+
+    if section:
+        catalog = section.catalog
+
+    root_sections = (
+        Section.objects
+        .filter(parent__isnull=True)
+        .prefetch_related("children__children")
+        .order_by("catalog", "order", "title")
+    )
+
+    ancestor_ids = set()
+
+    if section:
+        ancestor_ids = {s.id for s in section.get_ancestors()}
+        ancestor_ids.add(section.id)
+
+    return {
+        "root_sections": root_sections,
+        "active_section": section,
+        "ancestor_ids": ancestor_ids,
+    }
+
 @register.filter
 def has_group(user, group_name):
     return user.groups.filter(name=group_name).exists()
@@ -139,6 +163,7 @@ def catalog_sinyi(request):
     sections = (
         Section.objects
         .filter(catalog="sinyi", parent__isnull=True)
+        .prefetch_related("children__children")
         .order_by("order", "title")
     )
 
@@ -174,16 +199,18 @@ def catalog_sinyi(request):
     paginator = Paginator(result_qs, 10)
     page_obj = paginator.get_page(request.GET.get("page"))
 
+    sidebar = get_sidebar_context(catalog="sinyi")
+
     return render(
         request,
         "content/internal/catalog_sinyi.html",
         {
             "catalog_title": "Синь И Цюань",
-            "sections": sections,
             "page_obj": page_obj,
             "active_catalog": "sinyi",
             "sidebar_mode": "catalog",
             "query": q,
+            **sidebar,
         }
     )
 
@@ -194,6 +221,7 @@ def catalog_taiji(request):
     sections = (
         Section.objects
         .filter(catalog="taiji", parent__isnull=True)
+        .prefetch_related("children__children")
         .order_by("order", "title")
     )
 
@@ -233,16 +261,21 @@ def catalog_taiji(request):
     paginator = Paginator(result_qs, 10)
     page_obj = paginator.get_page(request.GET.get("page"))
 
+    sidebar = get_sidebar_context(catalog="taiji")
+
     return render(
         request,
-        "content/internal/catalog_taiji.html",
+        "content/internal/catalog_sinyi.html",
         {
-            "catalog_title": "Тайцзи",
-            "sections": sections,
+            "catalog_title": "Синь И Цюань",
+            "root_sections": sections,  # ⭐ НЕ sections
+            "active_section": None,  # ⭐ важно
+            "ancestor_ids": set(),  # ⭐ важно
             "page_obj": page_obj,
-            "active_catalog": "taiji",
+            "active_catalog": "sinyi",
             "sidebar_mode": "catalog",
             "query": q,
+            **sidebar,
         }
     )
 
@@ -331,13 +364,14 @@ def section_tree_page_api(request):
 
 @login_required
 def section_detail(request, slug):
+
     section = get_object_or_404(Section, slug=slug)
     query = request.GET.get("q", "").strip()
 
-    # ===== ЦЕПОЧКА РОДИТЕЛЕЙ =====
     ancestors = section.get_ancestors()
+    ancestor_ids = {s.id for s in ancestors}
+    ancestor_ids.add(section.id)
 
-    # ===== ДОЧЕРНИЕ РАЗДЕЛЫ =====
     children_qs = section.children.order_by("order", "title")
 
     children_page = None
@@ -355,7 +389,8 @@ def section_detail(request, slug):
                 status__in=[
                     Post.Status.PUBLISHED,
                     Post.Status.ARCHIVED
-                ] if is_publisher(request.user) else [Post.Status.PUBLISHED]
+                ] if is_publisher(request.user)
+                else [Post.Status.PUBLISHED]
             )
             .select_related("current_revision", "author")
         )
@@ -377,6 +412,9 @@ def section_detail(request, slug):
         paginator = Paginator(posts, 10)
         page_obj = paginator.get_page(request.GET.get("page"))
 
+    sidebar = get_sidebar_context(section)
+    
+
     return render(
         request,
         "content/internal/section_detail.html",
@@ -387,6 +425,8 @@ def section_detail(request, slug):
             "page_obj": page_obj,
             "query": query,
             "sidebar_mode": "section",
+            "can_edit": is_publisher(request.user),
+            **sidebar,
         }
     )
 @login_required
@@ -400,12 +440,22 @@ def post_detail(request, slug):
 
     section = post.section if post.section and post.section.slug else None
 
-    section_posts_qs = (
-        section.posts
-        .filter(status=Post.Status.PUBLISHED)
-        .order_by("order", "-published_at")
-        if section else Post.objects.none()
-    )
+    if section:
+        section_posts_qs = section.posts.all()
+
+        if not is_publisher(request.user):
+            section_posts_qs = section_posts_qs.filter(
+                status=Post.Status.PUBLISHED
+            )
+
+        section_posts_qs = section_posts_qs.order_by(
+            "order",
+            "-published_at"
+        )
+    else:
+        section_posts_qs = Post.objects.none()
+
+    sidebar = get_sidebar_context(post.section)
 
     return render(request, "content/internal/post_detail.html", {
         "post": post,
@@ -415,6 +465,7 @@ def post_detail(request, slug):
         "active_post_slug": post.slug,
         "sidebar_mode": "post",
         "can_edit": is_publisher(request.user),
+        **sidebar,
     })
 
 @login_required
@@ -808,18 +859,35 @@ def delete_section(request, slug):
 @login_required
 @publisher_required
 def section_list(request):
-    sections_qs = (
-        Section.objects
-        .annotate(posts_count=Count("posts"))
-        .order_by("title")
-    )
+    section_type = request.GET.get("type", "group")  # например дефолт на group
 
-    paginator = Paginator(sections_qs, 4)  # 20 разделов на страницу
+    base_qs = Section.objects.annotate(posts_count=Count("posts"))
+
+    # счётчики
+    counts = {
+        "container": base_qs.filter(parent__isnull=True).count(),
+        "group": base_qs.filter(parent__isnull=False, parent__parent__isnull=True).count(),
+        "content": base_qs.filter(parent__parent__isnull=False).count(),
+    }
+
+    # фильтр для текущей вкладки
+    if section_type == "container":
+        sections_qs = base_qs.filter(parent__isnull=True)
+    elif section_type == "content":
+        sections_qs = base_qs.filter(parent__parent__isnull=False)
+    else:  # group
+        sections_qs = base_qs.filter(parent__isnull=False, parent__parent__isnull=True)
+
+    sections_qs = sections_qs.order_by("title")
+
+    paginator = Paginator(sections_qs, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     return render(request, "content/internal/section_list.html", {
         "page_obj": page_obj,
+        "section_type": section_type,
+        "counts": counts,
     })
 
 

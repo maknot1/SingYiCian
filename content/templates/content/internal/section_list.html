@@ -15,6 +15,26 @@
   </a>
 </div>
 
+{# ================= ТАБЫ ================= #}
+<div style="margin-bottom: 1.5rem; display:flex; gap:10px; justify-content:flex-end;">
+
+  <a href="?type=container"
+     class="btn {% if section_type == 'container' %}btn-primary{% else %}btn-secondary{% endif %}">
+    Контейнеры{% if counts %} ({{ counts.container }}){% endif %}
+  </a>
+
+  <a href="?type=group"
+     class="btn {% if section_type == 'group' %}btn-primary{% else %}btn-secondary{% endif %}">
+    Группы{% if counts %} ({{ counts.group }}){% endif %}
+  </a>
+
+  <a href="?type=content"
+     class="btn {% if section_type == 'content' %}btn-primary{% else %}btn-secondary{% endif %}">
+    Контент{% if counts %} ({{ counts.content }}){% endif %}
+  </a>
+
+</div>
+
 <div class="dashboard-card">
 
 <table class="dashboard-table">
@@ -32,80 +52,80 @@
 {% for section in page_obj %}
   <tr>
 
-    {# ===== НАЗВАНИЕ + ИЕРАРХИЯ ===== #}
-    <td class="col-title">
+{# ===== НАЗВАНИЕ + ИЕРАРХИЯ ===== #}
+<td class="col-title">
 
-      {% if section.parent and section.parent.parent %}
-        <div style="margin-left:32px">
-          <span class="badge badge-light">контентный</span>
-          <div class="post-title">{{ section.title }}</div>
-          <div class="post-section">
-            {{ section.parent.title }} → {{ section.parent.parent.title }}
-          </div>
-        </div>
-
-      {% elif section.parent %}
-        <div style="margin-left:16px">
-          <span class="badge badge-secondary">подраздел</span>
-          <div class="post-title">{{ section.title }}</div>
-          <div class="post-section">
-            родитель: {{ section.parent.title }}
-          </div>
-        </div>
-
-      {% else %}
-        <div>
-          <span class="badge badge-primary">корневой</span>
-          <div class="post-title">{{ section.title }}</div>
-        </div>
-      {% endif %}
-
-    </td>
-
-    {# ===== КАТАЛОГ ===== #}
-    <td>
-      {{ section.catalog.title }}
-    </td>
-
-    {# ===== ТИП (СМЫСЛОВОЙ) ===== #}
-    <td>
-      {% if section.parent and section.parent.parent %}
-        <span class="status status-published">контент</span>
-      {% elif section.parent %}
-        <span class="status status-draft">группа</span>
-      {% else %}
-        <span class="status status-archived">контейнер</span>
-      {% endif %}
-    </td>
-
-    {# ===== СТАТЕЙ ===== #}
-    <td>
-      {% if section.posts_count %}
-        {{ section.posts_count }}
-      {% else %}
-        <span class="muted">—</span>
-      {% endif %}
-    </td>
-
-    {# ===== ДЕЙСТВИЯ ===== #}
-    <td class="col-actions">
-      <div class="actions-group">
-
-        <a href="{% url 'edit_section' section.slug %}"
-           class="action-btn action-edit"
-           title="Редактировать">✏️</a>
-
-        <form action="{% url 'delete_section' section.slug %}"
-              method="post"
-              onsubmit="return confirm('Удалить раздел? В нём не должно быть статей.');">
-          {% csrf_token %}
-          <button type="submit"
-                  class="action-btn action-delete"
-                  title="Удалить">🗑</button>
-        </form>
-
+  {% if section.parent and section.parent.parent %}
+    <div style="margin-left:32px">
+      <span class="badge badge-light">контентный</span>
+      <div class="post-title">{{ section.title }}</div>
+      <div class="post-section">
+        {{ section.parent.title }} → {{ section.parent.parent.title }}
       </div>
-    </td>
+    </div>
+
+  {% elif section.parent %}
+    <div style="margin-left:16px">
+      <span class="badge badge-secondary">подраздел</span>
+      <div class="post-title">{{ section.title }}</div>
+      <div class="post-section">
+        родитель: {{ section.parent.title }}
+      </div>
+    </div>
+
+  {% else %}
+    <div>
+      <span class="badge badge-primary">корневой</span>
+      <div class="post-title">{{ section.title }}</div>
+    </div>
+  {% endif %}
+
+</td>
+
+{# ===== КАТАЛОГ ===== #}
+<td>
+  {{ section.catalog.title }}
+</td>
+
+{# ===== ТИП ===== #}
+<td>
+  {% if section.parent and section.parent.parent %}
+    <span class="status status-published">контент</span>
+  {% elif section.parent %}
+    <span class="status status-draft">группа</span>
+  {% else %}
+    <span class="status status-archived">контейнер</span>
+  {% endif %}
+</td>
+
+{# ===== СТАТЕЙ ===== #}
+<td>
+  {% if section.posts_count %}
+    {{ section.posts_count }}
+  {% else %}
+    <span class="muted">—</span>
+  {% endif %}
+</td>
+
+{# ===== ДЕЙСТВИЯ ===== #}
+<td class="col-actions">
+  <div class="actions-group">
+
+    <a href="{% url 'edit_section' section.slug %}"
+       class="action-btn action-edit"
+       title="Редактировать">✏️</a>
+
+    <form action="{% url 'delete_section' section.slug %}"
+          method="post"
+          onsubmit="return confirm('Удалить раздел? В нём не должно быть статей.');">
+      {% csrf_token %}
+      <button type="submit"
+              class="action-btn action-delete"
+              title="Удалить">🗑</button>
+    </form>
+
+  </div>
+</td>
 
   </tr>
 {% empty %}
@@ -119,34 +139,37 @@
 
 </div>
 
-{# ===== ПАГИНАЦИЯ (КРАСИВАЯ, КАК ВЕЗДЕ) ===== #}
+{# ===== ПАГИНАЦИЯ ===== #}
 {% if page_obj and page_obj.has_other_pages %}
+
   <nav class="pagination">
 
-    {% if page_obj.has_previous %}
-      <a class="page-nav"
-         href="?page={{ page_obj.previous_page_number }}">
-        ←
-      </a>
-    {% endif %}
+```
+{% if page_obj.has_previous %}
+  <a class="page-nav"
+     href="?page={{ page_obj.previous_page_number }}&type={{ section_type }}">
+    ←
+  </a>
+{% endif %}
 
-    {% for num in page_obj.paginator.page_range %}
-      {% if num == page_obj.number %}
-        <span class="page-number active">{{ num }}</span>
-      {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-        <a class="page-number"
-           href="?page={{ num }}">
-          {{ num }}
-        </a>
-      {% endif %}
-    {% endfor %}
+{% for num in page_obj.paginator.page_range %}
+  {% if num == page_obj.number %}
+    <span class="page-number active">{{ num }}</span>
+  {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+    <a class="page-number"
+       href="?page={{ num }}&type={{ section_type }}">
+      {{ num }}
+    </a>
+  {% endif %}
+{% endfor %}
 
-    {% if page_obj.has_next %}
-      <a class="page-nav"
-         href="?page={{ page_obj.next_page_number }}">
-        →
-      </a>
-    {% endif %}
+{% if page_obj.has_next %}
+  <a class="page-nav"
+     href="?page={{ page_obj.next_page_number }}&type={{ section_type }}">
+    →
+  </a>
+{% endif %}
+```
 
   </nav>
 {% endif %}

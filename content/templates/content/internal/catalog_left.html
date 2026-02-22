@@ -1,29 +1,130 @@
-<div class="side-box mobile-collapsible">
-  <details open>
-    <summary class="side-title">Разделы</summary>
+<div class="side-box" data-sidebar="sections" data-storage-key="sidebar:sections">
+  <h4 class="side-title">Разделы</h4>
 
-    <nav class="side-nav">
-      <ul class="side-menu">
-        {% for section in sections %}
-          <li class="side-item">
-            <a href="{% url 'section_detail' section.slug %}" class="side-link">
-              {{ section.title }}
-            </a>
+  <ul class="side-menu">
+    {% for root in root_sections %}
+      {% with root_children=root.children.all %}
+      <li class="side-item">
 
-            {% if section.children.exists %}
-              <ul class="side-submenu">
-                {% for child in section.children.all %}
-                  <li>
-                    <a href="{% url 'section_detail' child.slug %}" class="side-sublink">
-                      {{ child.title }}
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    </nav>
-  </details>
+        <div class="side-row">
+          <a href="{% url 'section_detail' root.slug %}"
+             class="side-link {% if active_section and root.id == active_section.id %}active{% endif %}">
+            {{ root.title }}
+          </a>
+
+          {% if root_children.exists %}
+            <button class="side-toggle" type="button"
+                    data-toggle="{{ root.id }}"
+                    aria-label="Показать подразделы"
+                    aria-expanded="{% if root.id in ancestor_ids %}true{% else %}false{% endif %}">
+              +
+            </button>
+          {% endif %}
+        </div>
+
+        {% if root_children.exists %}
+          <ul class="side-submenu {% if root.id in ancestor_ids %}is-open{% endif %}"
+              data-submenu="{{ root.id }}">
+            {% for child in root_children %}
+              {% with child_children=child.children.all %}
+              <li class="side-subitem">
+
+                <div class="side-row">
+                  <a href="{% url 'section_detail' child.slug %}"
+                     class="side-sublink {% if active_section and child.id == active_section.id %}active{% endif %}">
+                    {{ child.title }}
+                  </a>
+
+                  {% if child_children %}
+                    <button class="side-toggle" type="button"
+                            data-toggle="{{ child.id }}"
+                            aria-label="Показать подразделы"
+                            aria-expanded="{% if child.id in ancestor_ids %}true{% else %}false{% endif %}">
+                      +
+                    </button>
+                  {% endif %}
+                </div>
+
+                {% if child_children %}
+                  <ul class="side-submenu {% if child.id in ancestor_ids %}is-open{% endif %}"
+                      data-submenu="{{ child.id }}">
+                    {% for sub in child_children %}
+                      <li>
+                        <a href="{% url 'section_detail' sub.slug %}"
+                           class="side-sublink {% if active_section and sub.id == active_section.id %}active{% endif %}">
+                          {{ sub.title }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+
+              </li>
+              {% endwith %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+      </li>
+      {% endwith %}
+    {% endfor %}
+  </ul>
 </div>
+
+<script>
+(function () {
+  const box = document.querySelector('[data-sidebar="sections"]');
+  if (!box) return;
+
+  const key = box.dataset.storageKey || "sidebar:sections";
+
+  function readSet() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(key) || "[]"));
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  function writeSet(set) {
+    try {
+      localStorage.setItem(key, JSON.stringify(Array.from(set)));
+    } catch (e) {}
+  }
+
+  const openSet = readSet();
+
+  // 1) применяем сохранённое состояние
+  openSet.forEach((id) => {
+    const ul = box.querySelector('[data-submenu="' + id + '"]');
+    const btn = box.querySelector('[data-toggle="' + id + '"]');
+    if (ul) ul.classList.add("is-open");
+    if (btn) btn.setAttribute("aria-expanded", "true");
+  });
+
+  // 2) добавляем в openSet всё, что открыто сервером (ancestor_ids)
+  box.querySelectorAll(".side-submenu.is-open[data-submenu]").forEach((ul) => {
+    openSet.add(ul.getAttribute("data-submenu"));
+  });
+  writeSet(openSet);
+
+  // 3) клики по кнопкам раскрытия
+  box.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-toggle]");
+    if (!btn) return;
+
+    e.preventDefault();
+    const id = btn.getAttribute("data-toggle");
+    const ul = box.querySelector('[data-submenu="' + id + '"]');
+    if (!ul) return;
+
+    const isOpen = ul.classList.toggle("is-open");
+    btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+
+    if (isOpen) openSet.add(id);
+    else openSet.delete(id);
+
+    writeSet(openSet);
+  });
+})();
+</script>

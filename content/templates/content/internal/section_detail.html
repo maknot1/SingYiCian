@@ -1,6 +1,6 @@
 {% extends "content/internal/base_internal.html" %}
 
-{% block title %}{{ section.title }}{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
 
@@ -8,29 +8,7 @@
 
 <!-- ЛЕВАЯ КОЛОНКА -->
 <aside class="main-left">
-
-  <div class="side-box">
-
-    <h4 class="side-title">Разделы</h4>
-
-    <ul class="side-menu">
-
-      {% for parent in ancestors %}
-        <li class="side-item level-{{ forloop.counter }}">
-          <a href="{% url 'section_detail' parent.slug %}">
-            {{ parent.title }}
-          </a>
-        </li>
-      {% endfor %}
-
-      <li class="side-item active level-current">
-        {{ section.title }}
-      </li>
-
-    </ul>
-
-  </div>
-
+    {% include "content/internal/catalog_left.html" %}
 </aside>
 
   <!-- ЦЕНТР -->
@@ -95,8 +73,10 @@
           <div class="post-grid featured">
             {% for post in page_obj %}
               {% if post.is_featured %}
-                <article class="post-card featured">
+                <article class="post-card featured {% if post.status == post.Status.ARCHIVED and can_edit %}post-archived{% endif %}">
+                  {% if post.status != post.Status.ARCHIVED or can_edit %}
                   <a href="{% url 'post_detail' post.slug %}">
+                  {% endif %}
                     <div class="post-card-body">
                       <h3>{{ post.title }}</h3>
                       {% if post.summary %}
@@ -122,10 +102,16 @@
         <div class="post-grid">
           {% for post in page_obj %}
             {% if not post.is_featured %}
-              <article class="post-card">
+              <article class="post-card {% if post.status == post.Status.ARCHIVED and can_edit %}post-archived{% endif %}">
                 <a href="{% url 'post_detail' post.slug %}">
                   <div class="post-card-body">
-                    <h3>{{ post.title }}</h3>
+                    <h3>
+                      {{ post.title }}
+
+                      {% if post.status == post.Status.ARCHIVED and can_edit %}
+                        <span class="badge-archived">архив</span>
+                      {% endif %}
+                    </h3>
                     {% if post.summary %}
                       <p>{{ post.summary }}</p>
                     {% endif %}
