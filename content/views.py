@@ -31,11 +31,14 @@ def get_sidebar_context(section=None, catalog=None):
     if section:
         catalog = section.catalog
 
+    qs = Section.objects.filter(parent__isnull=True)
+
+    if catalog:
+        qs = qs.filter(catalog=catalog)
+
     root_sections = (
-        Section.objects
-        .filter(parent__isnull=True)
-        .prefetch_related("children__children")
-        .order_by("catalog", "order", "title")
+        qs.prefetch_related("children__children")
+        .order_by("order", "title")
     )
 
     ancestor_ids = set()
@@ -218,14 +221,6 @@ def catalog_sinyi(request):
 def catalog_taiji(request):
     q = request.GET.get("q", "").strip()
 
-    sections = (
-        Section.objects
-        .filter(catalog="taiji", parent__isnull=True)
-        .prefetch_related("children__children")
-        .order_by("order", "title")
-    )
-
-    # 🔍 ВСЕ статьи каталога (ТОЛЬКО ДЛЯ ПОИСКА)
     search_qs = (
         Post.objects
         .filter(
@@ -235,11 +230,9 @@ def catalog_taiji(request):
         .select_related("section", "author", "current_revision")
     )
 
-    # 📌 ТОЛЬКО ЗАКРЕПЛЁННЫЕ (ДЛЯ ОТОБРАЖЕНИЯ БЕЗ ПОИСКА)
     featured_qs = search_qs.filter(is_featured=True)
 
     if q:
-        # 🔥 ПОИСК ПО ВСЕМ СТАТЬЯМ
         result_qs = search_qs.filter(
             Q(title__icontains=q) |
             Q(summary__icontains=q) |
@@ -251,7 +244,6 @@ def catalog_taiji(request):
             "-created_at"
         )
     else:
-        # без поиска — ТОЛЬКО ЗАКРЕПЛЁННЫЕ
         result_qs = featured_qs.order_by(
             "order",
             "-published_at",
@@ -265,20 +257,16 @@ def catalog_taiji(request):
 
     return render(
         request,
-        "content/internal/catalog_sinyi.html",
+        "content/internal/catalog_taiji.html",
         {
-            "catalog_title": "Синь И Цюань",
-            "root_sections": sections,  # ⭐ НЕ sections
-            "active_section": None,  # ⭐ важно
-            "ancestor_ids": set(),  # ⭐ важно
+            "catalog_title": "Тайцзи",
             "page_obj": page_obj,
-            "active_catalog": "sinyi",
+            "active_catalog": "taiji",
             "sidebar_mode": "catalog",
             "query": q,
             **sidebar,
         }
     )
-
 
 @login_required
 def section_tree(request):
