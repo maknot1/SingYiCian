@@ -7,7 +7,7 @@
       <li class="side-item">
 
         <div class="side-row">
-          <a href="{% url 'section_detail' root.slug %}"
+          <a href="{% url 'section_detail' root.slug %}#section-content-start"
              class="side-link {% if active_section and root.id == active_section.id %}active{% endif %}">
             {{ root.title }}
           </a>
@@ -30,7 +30,7 @@
               <li class="side-subitem">
 
                 <div class="side-row">
-                  <a href="{% url 'section_detail' child.slug %}"
+                  <a href="{% url 'section_detail' child.slug %}#section-content-start"
                      class="side-sublink {% if active_section and child.id == active_section.id %}active{% endif %}">
                     {{ child.title }}
                   </a>
@@ -50,7 +50,7 @@
                       data-submenu="{{ child.id }}">
                     {% for sub in child_children %}
                       <li>
-                        <a href="{% url 'section_detail' sub.slug %}"
+                        <a href="{% url 'section_detail' sub.slug %}#section-content-start"
                            class="side-sublink {% if active_section and sub.id == active_section.id %}active{% endif %}">
                           {{ sub.title }}
                         </a>

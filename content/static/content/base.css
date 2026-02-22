@@ -2609,3 +2609,7 @@ summary::after {
 .side-toggle[aria-expanded="true"] {
   transform: rotate(45deg);
 }
+
+html {
+  scroll-behavior: smooth;
+}
