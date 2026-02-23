@@ -42,3 +42,5 @@ htmlcov/
 
 # Node (если есть frontend)
 node_modules/
+db.json
+dump.sql

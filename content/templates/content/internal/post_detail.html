@@ -25,13 +25,56 @@
         </a>
       {% endif %}
 
-        {% if can_edit %}
-          <a href="{% url 'edit_post' post.slug %}" class="action-btn edit-btn">
-            Редактировать
-          </a>
-        {% endif %}
+      <button id="bookmark-btn"
+              class="action-btn"
+              data-slug="{{ post.slug }}"
+              data-state="{% if is_bookmarked %}added{% else %}removed{% endif %}">
+        ⭐ <span class="bookmark-text">{% if is_bookmarked %}Убрать из закладок{% else %}В закладки{% endif %}</span>
+      </button>
+
+      {% if can_edit %}
+        <a href="{% url 'edit_post' post.slug %}" class="action-btn edit-btn">
+          Редактировать
+        </a>
+      {% endif %}
     </div>
 
   </article>
 </div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("bookmark-btn");
+  if (!btn) return;
+
+  function render(state){
+    btn.dataset.state = state;
+    btn.textContent = (state === "added")
+      ? "⭐ Убрать из закладок"
+      : "⭐ В закладки";
+  }
+
+  btn.addEventListener("click", async () => {
+    const slug = btn.dataset.slug;
+
+    const res = await fetch(`/bookmark/${slug}/toggle/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+    if (data.state === "added" || data.state === "removed"){
+      render(data.state);
+    }
+  });
+});
+</script>
 {% endblock %}

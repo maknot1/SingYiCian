@@ -5,7 +5,7 @@ from content.emails import verify_email_token, send_confirm_email
 from django.utils import timezone
 from datetime import timedelta
 from django.views.decorators.http import require_POST, require_GET
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from .utils.snippet import make_snippet
 import uuid
@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django import template
-from .models import Section, Post, PostRevision, Activity, PostImage, UserProfile
+from .models import Section, Post, PostRevision, Activity, PostImage, UserProfile, Bookmark
 from .forms import PostEditorForm, SectionForm, ProfileForm
 from .permissions import publisher_required
 from .utils.html import clean_html
@@ -357,13 +357,12 @@ def section_detail(request, slug):
     query = request.GET.get("q", "").strip()
 
     ancestors = section.get_ancestors()
-    ancestor_ids = {s.id for s in ancestors}
-    ancestor_ids.add(section.id)
 
     children_qs = section.children.order_by("order", "title")
 
     children_page = None
     page_obj = None
+    featured_posts = None   # важно объявить заранее
 
     if children_qs.exists():
         paginator = Paginator(children_qs, 10)
@@ -391,17 +390,18 @@ def section_detail(request, slug):
             )
 
         posts = posts.order_by(
-            "-is_featured",
             "order",
             "-published_at",
             "-created_at"
         )
 
-        paginator = Paginator(posts, 10)
+        featured_posts = posts.filter(is_featured=True)
+        regular_posts = posts.filter(is_featured=False)
+
+        paginator = Paginator(regular_posts, 10)
         page_obj = paginator.get_page(request.GET.get("page"))
 
     sidebar = get_sidebar_context(section)
-    
 
     return render(
         request,
@@ -411,6 +411,7 @@ def section_detail(request, slug):
             "ancestors": ancestors,
             "children_page": children_page,
             "page_obj": page_obj,
+            "featured_posts": featured_posts,
             "query": query,
             "sidebar_mode": "section",
             "can_edit": is_publisher(request.user),
@@ -419,6 +420,8 @@ def section_detail(request, slug):
     )
 @login_required
 def post_detail(request, slug):
+
+
     qs = Post.objects.select_related("section", "author", "current_revision")
 
     if is_publisher(request.user):
@@ -443,6 +446,12 @@ def post_detail(request, slug):
     else:
         section_posts_qs = Post.objects.none()
 
+    is_bookmarked = Bookmark.objects.filter(
+        user=request.user,
+        post=post
+    ).exists()
+
+
     sidebar = get_sidebar_context(post.section)
 
     return render(request, "content/internal/post_detail.html", {
@@ -452,6 +461,7 @@ def post_detail(request, slug):
         "active_section_slug": section.slug if section else None,
         "active_post_slug": post.slug,
         "sidebar_mode": "post",
+        "is_bookmarked": is_bookmarked,
         "can_edit": is_publisher(request.user),
         **sidebar,
     })
@@ -530,6 +540,34 @@ def search_api(request):
         })
 
     return JsonResponse(data, safe=False)
+
+@login_required
+def toggle_bookmark(request, slug):
+    post = get_object_or_404(Post, slug=slug)
+
+    bookmark, created = Bookmark.objects.get_or_create(
+        user=request.user,
+        post=post
+    )
+
+    if not created:
+        bookmark.delete()
+        state = "removed"
+    else:
+        state = "added"
+
+    return JsonResponse({"state": state})
+
+@login_required
+def my_bookmarks(request):
+    qs = Bookmark.objects.filter(user=request.user).select_related("post")
+
+    paginator = Paginator(qs, 6)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    return render(request, "content/internal/bookmarks.html", {
+        "page_obj": page_obj
+    })
 
 
 @login_required

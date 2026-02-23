@@ -41,7 +41,9 @@
           <a href="{% url 'catalog_sinyi' %}">Синь И Цюань</a>
           <a href="{% url 'catalog_taiji' %}">Тайцзи</a>
           <a href="{% url 'profile' %}">Профиль</a>
-
+            {% if user.is_authenticated %}
+              <a href="{% url 'my_bookmarks' %}" class="nav-bookmarks">⭐ Закладки</a>
+            {% endif %}
           <div class="nav-divider"></div>
 
           {% if user|has_group:"Publishers" %}
@@ -64,6 +66,12 @@
 
   </div>
 </header>
+
+{% if user.is_authenticated %}
+  <a href="{% url 'my_bookmarks' %}" class="bookmark-tab" title="Закладки">
+    ⭐
+  </a>
+{% endif %}
 
 <div class="body-video-bg">
   <video autoplay muted loop playsinline>

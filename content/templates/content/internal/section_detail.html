@@ -14,8 +14,6 @@
   <!-- ЦЕНТР -->
 <main class="main-center">
 
-  <div id="section-content-start"></div>>
-
     <!-- HERO -->
     <div class="section-hero">
       <h1>{{ section.title }}</h1>
@@ -28,7 +26,7 @@
 
 
     {% if children_page and children_page.object_list %}
-      <section class="section-block">
+      <section class="section-block" id="section-content-start">
         <h2>Разделы</h2>
 
         <div class="section-grid">
@@ -68,34 +66,43 @@
     {% else %}
 
       {% if page_obj and page_obj.object_list %}
-        <!-- КЛЮЧЕВЫЕ МАТЕРИАЛЫ -->
+
+        {% if featured_posts %}
         <section class="section-block">
           <h2>Ключевые материалы</h2>
 
           <div class="post-grid featured">
-            {% for post in page_obj %}
-              {% if post.is_featured %}
-                <article class="post-card featured {% if post.status == post.Status.ARCHIVED and can_edit %}post-archived{% endif %}">
-                  {% if post.status != post.Status.ARCHIVED or can_edit %}
+            {% for post in featured_posts %}
+              <article class="post-card featured {% if post.status == post.Status.ARCHIVED and can_edit %}post-archived{% endif %}">
+
+                {% if post.status != post.Status.ARCHIVED or can_edit %}
                   <a href="{% url 'post_detail' post.slug %}">
-                  {% endif %}
+                {% endif %}
+
                     <div class="post-card-body">
                       <h3>{{ post.title }}</h3>
+
                       {% if post.summary %}
                         <p>{{ post.summary }}</p>
                       {% endif %}
+
                     </div>
+
+                {% if post.status != post.Status.ARCHIVED or can_edit %}
                   </a>
-                </article>
-              {% endif %}
+                {% endif %}
+
+              </article>
             {% endfor %}
           </div>
         </section>
+        {% endif %}
+
       {% endif %}
 
       <!-- ВСЕ МАТЕРИАЛЫ -->
       <section class="section-block">
-        <h2>Материалы раздела</h2>
+        <h2 id="section-content-start">Материалы раздела</h2>
 
         {% if query and not page_obj.object_list %}
           <p class="muted">Ничего не найдено по запросу «{{ query }}»</p>
@@ -131,7 +138,7 @@
         <nav class="pagination">
           {% if page_obj.has_previous %}
             <a class="page-nav"
-               href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+               href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}#section-content-start">
               ←
             </a>
           {% endif %}
@@ -141,7 +148,7 @@
               <span class="page-number active">{{ num }}</span>
             {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
               <a class="page-number"
-                 href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">
+                 href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}#section-content-start">
                 {{ num }}
               </a>
             {% endif %}
@@ -149,7 +156,7 @@
 
           {% if page_obj.has_next %}
             <a class="page-nav"
-               href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+               href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}#section-content-start">
               →
             </a>
           {% endif %}

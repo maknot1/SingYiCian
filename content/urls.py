@@ -28,6 +28,10 @@ urlpatterns = [
     path("section/<slug:slug>/delete/", views.delete_section, name="delete_section"),
     path('section/<slug:slug>/', views.section_detail, name='section_detail'),
 
+    # --- Bookmark ---
+    path("bookmark/<slug:slug>/toggle/", views.toggle_bookmark, name="toggle_bookmark"),
+    path("bookmarks/", views.my_bookmarks, name="my_bookmarks"),
+
     # --- Posts ---
     path('post/create/', views.create_post, name='create_post'),
     path("editor/upload-image/", views.upload_editor_image, name="upload_editor_image"),
