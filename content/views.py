@@ -362,44 +362,45 @@ def section_detail(request, slug):
 
     children_page = None
     page_obj = None
-    featured_posts = None   # важно объявить заранее
+    featured_posts = None
 
+    # дети
     if children_qs.exists():
         paginator = Paginator(children_qs, 10)
         children_page = paginator.get_page(request.GET.get("cpage"))
 
-    else:
-        posts = (
-            Post.objects
-            .filter(
-                section=section,
-                status__in=[
-                    Post.Status.PUBLISHED,
-                    Post.Status.ARCHIVED
-                ] if is_publisher(request.user)
-                else [Post.Status.PUBLISHED]
-            )
-            .select_related("current_revision", "author")
+    # посты (ВСЕГДА)
+    posts = (
+        Post.objects
+        .filter(
+            section=section,
+            status__in=[
+                Post.Status.PUBLISHED,
+                Post.Status.ARCHIVED
+            ] if is_publisher(request.user)
+            else [Post.Status.PUBLISHED]
+        )
+        .select_related("current_revision", "author")
+    )
+
+    if query:
+        posts = posts.filter(
+            Q(title__icontains=query) |
+            Q(summary__icontains=query) |
+            Q(current_revision__content__icontains=query)
         )
 
-        if query:
-            posts = posts.filter(
-                Q(title__icontains=query) |
-                Q(summary__icontains=query) |
-                Q(current_revision__content__icontains=query)
-            )
+    posts = posts.order_by(
+        "order",
+        "-published_at",
+        "-created_at"
+    )
 
-        posts = posts.order_by(
-            "order",
-            "-published_at",
-            "-created_at"
-        )
+    featured_posts = posts.filter(is_featured=True)
+    regular_posts = posts.filter(is_featured=False)
 
-        featured_posts = posts.filter(is_featured=True)
-        regular_posts = posts.filter(is_featured=False)
-
-        paginator = Paginator(regular_posts, 10)
-        page_obj = paginator.get_page(request.GET.get("page"))
+    paginator = Paginator(regular_posts, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
 
     sidebar = get_sidebar_context(section)
 
@@ -432,7 +433,18 @@ def post_detail(request, slug):
     section = post.section if post.section and post.section.slug else None
 
     if section:
-        section_posts_qs = section.posts.all()
+
+        def collect_sections(node):
+            result = [node]
+            for child in node.children.all():
+                result += collect_sections(child)
+            return result
+
+        sections = collect_sections(section)
+
+        section_posts_qs = Post.objects.filter(
+            section__in=sections
+        )
 
         if not is_publisher(request.user):
             section_posts_qs = section_posts_qs.filter(
