@@ -20,7 +20,7 @@
 
     <div class="article-actions">
       {% if post.section %}
-        <a href="{% url 'section_detail' post.section.slug %}" class="action-btn back-btn">
+        <a href="{% url 'section_detail' post.section.slug %}#section-content-start" class="action-btn back-btn">
           ← В раздел
         </a>
       {% endif %}

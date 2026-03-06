@@ -1,6 +1,6 @@
 {% extends "content/internal/base_internal.html" %}
 
-{% block title %}{{ post.title }}{% endblock %}
+{% block title %}{{ section.title }}{% endblock %}
 
 {% block content %}
 
@@ -26,12 +26,13 @@
 
 
     {% if children_page and children_page.object_list %}
-      <section class="section-block" id="section-content-start">
+      <section class="section-block">
+        <div id="section-content-start"></div>
         <h2>Разделы</h2>
 
         <div class="section-grid">
           {% for child in children_page %}
-            <a href="{% url 'section_detail' child.slug %}" class="section-card">
+            <a href="{% url 'section_detail' child.slug %}#section-content-start" class="section-card">
               <h3>{{ child.title }}</h3>
               {% if child.description %}
                 <p>{{ child.description }}</p>
@@ -44,7 +45,7 @@
       {% if children_page.has_other_pages %}
         <nav class="pagination">
           {% if children_page.has_previous %}
-            <a class="page-nav" href="?cpage={{ children_page.previous_page_number }}">←</a>
+            <a class="page-nav" href="?cpage={{ children_page.previous_page_number }}#section-content-start">←</a>
           {% endif %}
 
           {% for num in children_page.paginator.page_range %}
@@ -102,7 +103,8 @@
 
       <!-- ВСЕ МАТЕРИАЛЫ -->
       <section class="section-block">
-        <h2 id="section-content-start">Материалы раздела</h2>
+        <div id="section-content-start"></div>
+        <h2>Материалы раздела</h2>
 
         {% if query and not page_obj.object_list %}
           <p class="muted">Ничего не найдено по запросу «{{ query }}»</p>

@@ -2815,3 +2815,8 @@ html {
   font-size: 32px;
   font-weight: 600;
 }
+.activity-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}

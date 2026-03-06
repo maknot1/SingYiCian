@@ -1,7 +1,7 @@
 {% load tz %}
 
 {% for post in page_obj %}
-  <article class="activity-card {{ post.last_action }}">
+  <a href="{% url 'post_detail' post.slug %}" class="activity-card activity-card-link {{ post.last_action }}">
 
     <header class="activity-header">
       <div class="activity-dates">
@@ -24,16 +24,10 @@
     <div class="activity-meta">
       <span>Раздел: <strong>{{ post.section.title }}</strong></span>
       <span>·</span>
-      <span>Автор: {{ post.author.username|default:"система" }}</span>
+      <span>Опубликовал/а: {{ post.author.username|default:"система" }}</span>
     </div>
 
-    <div class="activity-actions">
-      <a href="{% url 'post_detail' post.slug %}" class="activity-link">
-        Открыть →
-      </a>
-    </div>
-
-  </article>
+  </a>
 {% empty %}
   <p class="muted">Публикаций пока нет</p>
 {% endfor %}
