@@ -2,6 +2,106 @@
 
 {% block title %}{{ section.title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+.section-hero {
+  margin-bottom: 32px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eee;
+}
+
+.section-lead {
+  font-size: 18px;
+  color: #555;
+  max-width: 640px;
+}
+
+
+.post-card.featured {
+  border-left: 4px solid #7a1212;
+  background: rgba(255,255,255,0.7);
+}
+
+.post-card.featured h3::after {
+  content: " ★";
+  color: #7a1212;
+  font-weight: 600;
+}
+.sidebar-posts li.featured a {
+  font-weight: 600;
+  color: #7a1212;
+}
+
+
+
+/* СЕТКА ПОДРАЗДЕЛОВ */
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* КАРТОЧКА РАЗДЕЛА */
+.section-card {
+  display: block;
+  padding: 20px 22px;
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(6px);
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+
+  text-decoration: none;
+  color: #1f1f1f;
+
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    background .18s ease;
+}
+
+/* HOVER */
+.section-card:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.92);
+
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+/* ЗАГОЛОВОК */
+.section-card-title {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.3;
+
+  color: #2a2a2a;
+}
+
+/* ОПИСАНИЕ */
+.section-card-desc {
+  margin: 0;
+  font-size: .9rem;
+  line-height: 1.45;
+  color: #5e5e5e;
+}
+
+/* УБИРАЕМ ПОДЧЁРКИВАНИЯ НАВСЕГДА */
+.section-card:hover,
+.section-card:focus,
+.section-card:active {
+  text-decoration: none;
+}
+
+</style>
+{% endblock %}
+
 {% block content %}
 
 <div class="page-main page-main-inner section-page">

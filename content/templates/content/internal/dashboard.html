@@ -8,154 +8,725 @@
   {% endif %}
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.dashboard-page {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.dashboard-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-hero-modern {
+  position: relative;
+  overflow: hidden;
+
+  padding: 28px 28px 24px;
+  border-radius: 28px;
+
+  background:
+    radial-gradient(circle at top right, rgba(184, 134, 11, 0.16), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(122, 18, 18, 0.12), transparent 32%),
+    linear-gradient(145deg, rgba(255,255,255,0.96), rgba(250,245,239,0.92));
+
+  border: 1px solid rgba(122, 18, 18, 0.10);
+
+  box-shadow:
+    0 22px 50px rgba(24, 16, 16, 0.10),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.dashboard-hero-modern::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+  opacity: 0.5;
+}
+
+.dashboard-hero-top {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.dashboard-hero-copy {
+  max-width: 720px;
+}
+
+.dashboard-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px 12px;
+  margin-bottom: 14px;
+
+  border-radius: 999px;
+  background: rgba(122, 18, 18, 0.08);
+  border: 1px solid rgba(122, 18, 18, 0.12);
+
+  color: #7a1212;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dashboard-hero-title {
+  margin: 0 0 10px;
+  font-size: 34px;
+  line-height: 1.1;
+  color: #261712;
+}
+
+.dashboard-hero-text {
+  margin: 0;
+  max-width: 640px;
+  color: #6e5a54;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.dashboard-actions-modern {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.dashboard-actions-modern .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 46px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dashboard-actions-modern .btn-primary {
+  box-shadow: 0 12px 24px rgba(122, 18, 18, 0.18);
+}
+
+.dashboard-actions-modern .btn-secondary {
+  background: rgba(122, 18, 18, 0.06);
+  border: 1px solid rgba(122, 18, 18, 0.12);
+  color: #7a1212;
+}
+
+.dashboard-actions-modern .btn-secondary:hover {
+  background: rgba(122, 18, 18, 0.10);
+}
+
+.dashboard-stats {
+  position: relative;
+  z-index: 1;
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.dashboard-stat {
+  padding: 16px 18px;
+  border-radius: 18px;
+
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(122, 18, 18, 0.08);
+
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.dashboard-stat-label {
+  display: block;
+  margin-bottom: 6px;
+
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8a746b;
+}
+
+.dashboard-stat-value {
+  display: block;
+  font-size: 26px;
+  font-weight: 700;
+  color: #2b1712;
+}
+
+.dashboard-stat-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #7b6861;
+}
+
+.dashboard-table-card {
+  position: relative;
+  overflow: hidden;
+
+  padding: 20px;
+  border-radius: 24px;
+
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.95), rgba(252,249,246,0.92));
+  border: 1px solid rgba(122, 18, 18, 0.08);
+
+  box-shadow:
+    0 18px 42px rgba(20, 12, 12, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.75);
+}
+
+.dashboard-table-wrap {
+  overflow-x: auto;
+}
+
+.dashboard-table-modern {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+}
+
+.dashboard-table-modern thead th {
+  padding: 0 14px 10px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8d776d;
+}
+
+.dashboard-table-modern tbody tr {
+  background: rgba(255,255,255,0.94);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.05),
+    inset 0 0 0 1px rgba(122, 18, 18, 0.06);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dashboard-table-modern tbody tr:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 30px rgba(0,0,0,0.08),
+    inset 0 0 0 1px rgba(122, 18, 18, 0.10);
+}
+
+.dashboard-table-modern tbody td {
+  padding: 18px 14px;
+  vertical-align: middle;
+}
+
+.dashboard-table-modern tbody td:first-child {
+  border-radius: 18px 0 0 18px;
+}
+
+.dashboard-table-modern tbody td:last-child {
+  border-radius: 0 18px 18px 0;
+}
+
+.dashboard-post-title {
+  margin: 0 0 5px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #2f1b15;
+  line-height: 1.35;
+}
+
+.dashboard-post-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  color: #7a6660;
+  font-size: 13px;
+}
+
+.dashboard-post-dot {
+  opacity: 0.55;
+}
+
+.dashboard-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 8px 12px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.dashboard-status.status-published {
+  background: rgba(26, 127, 75, 0.12);
+  color: #17653e;
+}
+
+.dashboard-status.status-draft {
+  background: rgba(90, 90, 90, 0.10);
+  color: #555;
+}
+
+.dashboard-status.status-archived {
+  background: rgba(163, 51, 51, 0.12);
+  color: #9b2f2f;
+}
+
+.dashboard-actions-cell {
+  min-width: 220px;
+}
+
+.actions-group-modern {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.actions-group-modern form {
+  margin: 0;
+}
+
+.actions-group-modern .action-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid transparent;
+  background: rgba(248, 244, 239, 0.9);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.actions-group-modern .action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(0,0,0,0.08);
+}
+
+.actions-group-modern .action-view {
+  color: #4f4f4f;
+  border-color: rgba(0,0,0,0.06);
+}
+
+.actions-group-modern .action-view:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.actions-group-modern .action-edit {
+  color: #3a5fcc;
+  border-color: rgba(58,95,204,0.14);
+}
+
+.actions-group-modern .action-edit:hover {
+  background: rgba(58,95,204,0.10);
+}
+
+.actions-group-modern .action-publish {
+  color: #1a7f4b;
+  border-color: rgba(26,127,75,0.14);
+}
+
+.actions-group-modern .action-publish:hover {
+  background: rgba(26,127,75,0.12);
+}
+
+.actions-group-modern .action-archive {
+  color: #7a1212;
+  border-color: rgba(122,18,18,0.14);
+}
+
+.actions-group-modern .action-archive:hover {
+  background: rgba(122,18,18,0.10);
+}
+
+.actions-group-modern .action-delete {
+  color: #a33;
+  border-color: rgba(163,51,51,0.14);
+}
+
+.actions-group-modern .action-delete:hover {
+  background: rgba(163,51,51,0.11);
+}
+
+.dashboard-empty {
+  text-align: center;
+  padding: 36px 18px;
+  color: #7b6660;
+}
+
+.dashboard-empty-icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.dashboard-empty-title {
+  margin: 0 0 6px;
+  color: #35201a;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.dashboard-empty-text {
+  margin: 0;
+  font-size: 14px;
+}
+
+.dashboard-footer-note {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 13px;
+  color: #8a7770;
+}
+
+@media (max-width: 980px) {
+  .dashboard-hero-top {
+    flex-direction: column;
+  }
+
+  .dashboard-actions-modern {
+    justify-content: flex-start;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-page {
+    max-width: 100%;
+  }
+
+  .dashboard-hero-modern {
+    padding: 22px 18px 18px;
+    border-radius: 22px;
+  }
+
+  .dashboard-hero-title {
+    font-size: 28px;
+  }
+
+  .dashboard-actions-modern {
+    width: 100%;
+  }
+
+  .dashboard-actions-modern .btn {
+    width: 100%;
+  }
+
+  .dashboard-table-card {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .dashboard-table-modern thead {
+    display: none;
+  }
+
+  .dashboard-table-modern,
+  .dashboard-table-modern tbody,
+  .dashboard-table-modern tr,
+  .dashboard-table-modern td {
+    display: block;
+    width: 100%;
+  }
+
+  .dashboard-table-modern tbody tr {
+    padding: 14px;
+    border-radius: 18px;
+    margin-bottom: 14px;
+  }
+
+  .dashboard-table-modern tbody td {
+    padding: 0;
+    border-radius: 0 !important;
+  }
+
+  .dashboard-table-modern tbody td + td {
+    margin-top: 14px;
+  }
+
+  .dashboard-table-modern .col-status::before,
+  .dashboard-table-modern .dashboard-actions-cell::before {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a746b;
+  }
+
+  .dashboard-table-modern .col-status::before {
+    content: "Статус";
+  }
+
+  .dashboard-table-modern .dashboard-actions-cell::before {
+    content: "Действия";
+  }
+
+  .actions-group-modern {
+    justify-content: flex-start;
+  }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
-<div class="dashboard-header">
-  <h1>
-    {% if mode == "archive" %}
-      Архив статей
-    {% else %}
-      Панель публикатора
-    {% endif %}
-  </h1>
+<div class="dashboard-page">
+  <div class="dashboard-shell">
 
-  <div class="dashboard-actions">
-    <a href="{% url 'section_list' %}" class="btn btn-secondary">
-      Редактор разделов
-    </a>
+    <section class="dashboard-hero-modern">
+      <div class="dashboard-hero-top">
+        <div class="dashboard-hero-copy">
+          <div class="dashboard-badge">
+            {% if mode == "archive" %}
+              🗄 Архив публикаций
+            {% else %}
+              ✍ Панель управления контентом
+            {% endif %}
+          </div>
 
-    <a href="{% url 'create_post' %}" class="btn btn-primary">
-      ➕ Новая статья
-    </a>
+          <h1 class="dashboard-hero-title">
+            {% if mode == "archive" %}
+              Архив статей
+            {% else %}
+              Панель публикатора
+            {% endif %}
+          </h1>
 
-    {% if mode != "archive" %}
-      <a href="{% url 'archived_posts' %}" class="btn btn-secondary">
-        🗄 Архив
-      </a>
-    {% else %}
-      <a href="{% url 'dashboard' %}" class="btn btn-secondary">
-        ← К активным
-      </a>
-    {% endif %}
+          <p class="dashboard-hero-text">
+            {% if mode == "archive" %}
+              Здесь собраны материалы, которые были сняты с активной публикации, но сохранены в системе.
+            {% else %}
+              Управление материалами школы: просмотр, редактирование, публикация, перенос в архив и удаление.
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="dashboard-actions-modern">
+          <a href="{% url 'section_list' %}" class="btn btn-secondary">
+            🧭 Редактор разделов
+          </a>
+
+          <a href="{% url 'create_post' %}" class="btn btn-primary">
+            ➕ Новая статья
+          </a>
+
+          {% if mode != "archive" %}
+            <a href="{% url 'archived_posts' %}" class="btn btn-secondary">
+              🗄 Архив
+            </a>
+          {% else %}
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+              ← К активным
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="dashboard-stats">
+        <div class="dashboard-stat">
+          <span class="dashboard-stat-label">Материалов на странице</span>
+          <span class="dashboard-stat-value">{{ page_obj|length }}</span>
+          <span class="dashboard-stat-note">Количество записей в текущем списке</span>
+        </div>
+
+        <div class="dashboard-stat">
+          <span class="dashboard-stat-label">Всего материалов</span>
+          <span class="dashboard-stat-value">{{ page_obj.paginator.count }}</span>
+          <span class="dashboard-stat-note">Общее число записей в выбранном режиме</span>
+        </div>
+
+        <div class="dashboard-stat">
+          <span class="dashboard-stat-label">Текущий режим</span>
+          <span class="dashboard-stat-value">
+            {% if mode == "archive" %}
+              Архив
+            {% else %}
+              Активные
+            {% endif %}
+          </span>
+          <span class="dashboard-stat-note">
+            {% if mode == "archive" %}
+              Просмотр снятых с публикации материалов
+            {% else %}
+              Рабочий список активных и редактируемых статей
+            {% endif %}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-table-card">
+      <div class="dashboard-table-wrap">
+        <table class="dashboard-table dashboard-table-modern">
+          <thead>
+            <tr>
+              <th>Статья</th>
+              <th>Статус</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+
+          <tbody>
+          {% for post in page_obj %}
+            <tr>
+
+              <td class="col-title">
+                <div class="dashboard-post-title">
+                  {{ post.title }}
+                </div>
+
+                <div class="dashboard-post-meta">
+                  <span>{{ post.section.title }}</span>
+                  <span class="dashboard-post-dot">•</span>
+                  <span>{{ post.slug }}</span>
+                </div>
+              </td>
+
+              <td class="col-status">
+                <span class="status dashboard-status status-{{ post.status }}">
+                  {{ post.get_status_display }}
+                </span>
+              </td>
+
+              <td class="col-actions dashboard-actions-cell">
+                <div class="actions-group actions-group-modern">
+
+                  <a href="{% url 'post_detail' post.slug %}"
+                     class="action-btn action-view"
+                     title="Просмотр">👁</a>
+
+                  <a href="{% url 'edit_post' post.slug %}"
+                     class="action-btn action-edit"
+                     title="Редактировать">✏️</a>
+
+                  {% if post.status != post.Status.PUBLISHED %}
+                    <form action="{% url 'publish_post' post.slug %}" method="post">
+                      {% csrf_token %}
+                      <button type="submit"
+                              class="action-btn action-publish"
+                              title="Опубликовать">📌</button>
+                    </form>
+                  {% endif %}
+
+                  {% if post.status != post.Status.ARCHIVED and mode != "archive" %}
+                    <form action="{% url 'archive_post' post.slug %}" method="post">
+                      {% csrf_token %}
+                      <button type="submit"
+                              class="action-btn action-archive"
+                              title="В архив">🗄</button>
+                    </form>
+                  {% endif %}
+
+                  <form action="{% url 'delete_post' post.slug %}"
+                        method="post"
+                        onsubmit="return confirm('Удалить статью навсегда?');">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="action-btn action-delete"
+                            title="Удалить">🗑</button>
+                  </form>
+
+                </div>
+              </td>
+
+            </tr>
+
+          {% empty %}
+            <tr>
+              <td colspan="3">
+                <div class="dashboard-empty">
+                  <div class="dashboard-empty-icon">📄</div>
+                  <h3 class="dashboard-empty-title">Статей пока нет</h3>
+                  <p class="dashboard-empty-text">
+                    {% if mode == "archive" %}
+                      В архиве пока нет материалов.
+                    {% else %}
+                      Создайте первую статью, чтобы начать наполнять сайт.
+                    {% endif %}
+                  </p>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if page_obj and page_obj.has_other_pages %}
+        <nav class="pagination">
+
+          {% if page_obj.has_previous %}
+            <a class="page-nav"
+               href="?page={{ page_obj.previous_page_number }}">
+              ←
+            </a>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if num == page_obj.number %}
+              <span class="page-number active">{{ num }}</span>
+            {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+              <a class="page-number"
+                 href="?page={{ num }}">
+                {{ num }}
+              </a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a class="page-nav"
+               href="?page={{ page_obj.next_page_number }}">
+              →
+            </a>
+          {% endif %}
+
+        </nav>
+
+        <div class="dashboard-footer-note">
+          Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+        </div>
+      {% endif %}
+    </section>
+
   </div>
 </div>
-
-<div class="dashboard-card">
-
-<table class="dashboard-table">
-  <thead>
-    <tr>
-      <th>Статья</th>
-      <th>Статус</th>
-      <th>Действия</th>
-    </tr>
-  </thead>
-
-  <tbody>
-  {% for post in page_obj %}
-    <tr>
-
-      {# === ЗАГОЛОВОК + РАЗДЕЛ (В ОДНОЙ КОЛОНКЕ) === #}
-      <td class="col-title">
-        <div class="post-title">
-          {{ post.title }}
-        </div>
-        <div class="post-section">
-          {{ post.section.title }}
-        </div>
-      </td>
-
-      {# === СТАТУС === #}
-      <td class="col-status">
-        <span class="status status-{{ post.status }}">
-          {{ post.get_status_display }}
-        </span>
-      </td>
-
-      {# === ДЕЙСТВИЯ === #}
-      <td class="col-actions">
-        <div class="actions-group">
-
-          <a href="{% url 'post_detail' post.slug %}"
-           class="action-btn action-view"
-           title="Просмотр">👁</a>
-
-          <a href="{% url 'edit_post' post.slug %}"
-           class="action-btn action-edit"
-           title="Редактировать">✏️</a>
-
-         {% if post.status != post.Status.PUBLISHED %}
-          <form action="{% url 'publish_post' post.slug %}" method="post">
-            {% csrf_token %}
-            <button type="submit"
-                    class="action-btn action-publish"
-                    title="Опубликовать">📌</button>
-          </form>
-          {% endif %}
-
-          {% if post.status != post.Status.ARCHIVED and mode != "archive" %}
-          <form action="{% url 'archive_post' post.slug %}" method="post">
-            {% csrf_token %}
-            <button type="submit"
-                    class="action-btn action-archive"
-                    title="В архив">🗄</button>
-          </form>
-          {% endif %}
-
-        <form action="{% url 'delete_post' post.slug %}"
-              method="post"
-              onsubmit="return confirm('Удалить статью навсегда?');">
-          {% csrf_token %}
-          <button type="submit"
-                  class="action-btn action-delete"
-                  title="Удалить">🗑</button>
-        </form>
-
-        </div>
-      </td>
-
-    </tr>
-
-  {% empty %}
-    <tr>
-      <td colspan="3">Статей нет</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
-
-</div>
-
-{% if page_obj and page_obj.has_other_pages %}
-  <nav class="pagination">
-
-    {% if page_obj.has_previous %}
-      <a class="page-nav"
-         href="?page={{ page_obj.previous_page_number }}">
-        ←
-      </a>
-    {% endif %}
-
-    {% for num in page_obj.paginator.page_range %}
-      {% if num == page_obj.number %}
-        <span class="page-number active">{{ num }}</span>
-      {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-        <a class="page-number"
-           href="?page={{ num }}">
-          {{ num }}
-        </a>
-      {% endif %}
-    {% endfor %}
-
-    {% if page_obj.has_next %}
-      <a class="page-nav"
-         href="?page={{ page_obj.next_page_number }}">
-        →
-      </a>
-    {% endif %}
-
-  </nav>
-{% endif %}
-
 
 {% endblock %}

@@ -2,6 +2,70 @@
 
 {% block title %}Структура разделов{% endblock %}
 
+{% block extra_css %}
+<style>
+.section-node.level-0 { margin-left: 0; }
+.section-node.level-1 { margin-left: 1.5rem; }
+.section-node.level-2 { margin-left: 3rem; }
+
+.section-search-box {
+  margin-top: 1.5rem;
+  max-width: 420px;
+}
+
+.section-search-results {
+  margin-top: .5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.section-search-item {
+  padding: .4rem .6rem;
+  cursor: pointer;
+}
+
+.section-search-item:hover {
+  background: #f3f3f3;
+}
+
+
+.section-tree-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.section-tree-modal.hidden {
+  display: none;
+}
+
+.section-tree-box {
+  background: #fff;
+  padding: 1.5rem;
+  width: 420px;
+  max-height: 70vh;
+  overflow: auto;
+  border-radius: 12px;
+}
+
+.section-tree-node {
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.section-tree-node span:hover {
+  text-decoration: underline;
+}
+
+
+</style>
+{% endblock %}
+
 {% block content %}
 <h1>Структура разделов</h1>
 
