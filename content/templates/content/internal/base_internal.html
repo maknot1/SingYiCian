@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Школа Синь И Цюань{% endblock %}</title>
+    <title>{% block title %}Синъицюань{% endblock %}</title>
 
     {% load static %}
     {% load group_tags %}
@@ -2062,7 +2062,7 @@ footer {
     <a href="{{ url_main }}" class="brand">
       <img src="{% static 'content/logo.png' %}" class="logo" alt="Логотип">
       <div class="brand-text">
-        <div class="brand-title">Рижская школа Синь И Цюань и Тайцзи</div>
+        <div class="brand-title">Рижская школа Синъицюань и Тайцзи</div>
         <div class="brand-subtitle">традиция и внутренняя сила</div>
       </div>
     </a>
@@ -2081,7 +2081,7 @@ footer {
 
     <nav class="desktop-nav" id="navMenu">
       <a href="{{ url_main }}" class="{% if request.path == url_main %}is-current{% endif %}">Главная</a>
-      <a href="{{ url_catalog_sinyi }}" class="{% if request.path == url_catalog_sinyi %}is-current{% endif %}">Синь И Цюань</a>
+      <a href="{{ url_catalog_sinyi }}" class="{% if request.path == url_catalog_sinyi %}is-current{% endif %}">Синъицюань</a>
       <a href="{{ url_catalog_taiji }}" class="{% if request.path == url_catalog_taiji %}is-current{% endif %}">Тайцзи</a>
       <a href="{{ url_profile }}" class="{% if request.path == url_profile %}is-current{% endif %}">Профиль</a>
       {% if user.is_authenticated %}
